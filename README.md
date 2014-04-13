@@ -1,0 +1,3 @@
+RichMine
+========
+ALL YOUR RICH COIN ARE BELONG TO US!
