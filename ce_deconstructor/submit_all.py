@@ -3,9 +3,9 @@ import requests
 
 argc = len(sys.argv)
 
+num_submitted = 0
 for i in range(79, 102):
     graph_size = i
-    num_submitted = 0
     for j in range(100):
         output_file_name = "ce-2/ce.{0}-{1}.txt".format(graph_size, j)
         solution_string = ""
