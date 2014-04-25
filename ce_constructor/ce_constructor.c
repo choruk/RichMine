@@ -239,9 +239,10 @@ int main(int argc, char *argv[])
     // graphSize == # of rows
     int chunkSize = graphSize / p;
     int leftOver = graphSize % p;
-    for (int i = 0; i < p; i++)
+    for (i = 0; i < p; i++)
     {
-      graphChunks[i] = GraphChunk(0, chunkSize);
+      graphChunks[i].size = chunkSize;
+      graphChunks[i].offset = 0;
       if (leftOver > 0)
       {
         graphChunks[i].size++;
@@ -254,7 +255,7 @@ int main(int argc, char *argv[])
     }
     // We use this to check later
     bestCount = BIG_COUNT;
-    struct EdgeFlip edgeFlipResults = (struct EdgeFlip *)malloc(p * sizeof(struct EdgeFlip));
+    struct EdgeFlip *edgeFlipResults = (struct EdgeFlip *)malloc(p * sizeof(struct EdgeFlip));
     cilk_for (i = 0; i < p; i++)
     {
       edgeFlipResults[i].count = 0;

@@ -4,7 +4,6 @@
 struct GraphChunk {
   int offset;
   int size;
-  GraphChunk(int o=0, int s=0):offset(o), size(s){}
 };
 
 struct EdgeFlip {
