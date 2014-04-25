@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
     numProc = argv[1];
   }
   __cilkrts_set_param("nworkers", numProc);
-  printf("# of workers: %s\n", __cilkrts_get_nworkers());
+  printf("# of workers: %d\n", __cilkrts_get_nworkers());
   int p = atoi(numProc);
   int count, bestCount;
   int i, j, bestI, bestJ;
