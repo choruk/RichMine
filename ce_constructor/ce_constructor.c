@@ -229,9 +229,10 @@ int main(int argc, char *argv[])
 		 * notice the indices
 		 */
     // Need a copy of graph for each processor
-    int **graphs = (int **)malloc(p * graphSize*graphSize*sizeof(int));
+    int **graphs = (int **)malloc(p * sizeof(int*));
     cilk_for (i = 0; i < p; i++)
     {
+      graphs[i] = (int *)malloc(graphSize*graphSize*sizeof(int));
       CopyGraph(graph, graphSize, graphs[i], graphSize);
     }
     // Now we need to divide the "rows" of the matrix up evenly among processors
