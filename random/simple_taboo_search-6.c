@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <time.h>
 
 #include "fifo.h"	/* for taboo list */
 
@@ -128,8 +129,12 @@ int main(int argc,char *argv[])
 	int best_j;
 	void *taboo_list;
 
+	clock_t cstart = clock();
+	clock_t cnow = 0;
+	int elapsed, sElapsed, mElapsed, hElapsed;
+
 	/*
-	 * start with graph of size 8
+	 * start with graph of size 99
 	 */
 	gsize = 99;
 	g = (int *)malloc(gsize*gsize*sizeof(int));
@@ -236,7 +241,16 @@ int main(int argc,char *argv[])
 		//FIFOInsertEdge(taboo_list,best_i,best_j);
 		FIFOInsertEdgeCount(taboo_list,best_i,best_j,count);
 
-		printf("ce size: %d, best_count: %d, best edge: (%d,%d), new color: %d\n",
+		cnow = clock();
+		elapsed = ((int)(cnow-cstart))/CLOCKS_PER_SEC;
+		sElapsed = elapsed % 60;
+		mElapsed = elapsed / 60;
+		hElapsed = elapsed / 3600;
+		
+		printf("%dh%dm%ds - ce size: %d, best_count: %d, best edge: (%d,%d), new color: %d\n",
+		       hElapsed,
+		       mElapsed,
+		       sElapsed,
 			gsize,
 			best_count,
 			best_i,
