@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <string.h>
 #include <cilk/cilk.h>
 #include "fifo.h"
 #include "ce_constructor.h"
 
+#define INITIAL_GRAPH_SIZE 8
 #define SYMMETRIC_RAMSEY_NUMBER 6
 #define TABOO_SIZE 500
 #define BIG_COUNT 9999999
@@ -112,7 +114,7 @@ int CliqueCount(int *g, int gsize)
  * that is
  * 	new_g[i,j] = old_g[i,j]
  */
-void CopyGraph(int *old_g, int o_gsize, int *new_g, int n_gsize)
+void CopyGraph(int *oldGraph, int oldGraphSize, int *newGraph, int newGraphSize)
 {
 	int i;
 	int j;
@@ -120,18 +122,94 @@ void CopyGraph(int *old_g, int o_gsize, int *new_g, int n_gsize)
 	/*
 	 * new g must be bigger or equal
 	 */
-	if (n_gsize < o_gsize)
+	if (newGraphSize < oldGraphSize)
 		return;
 
-	cilk_for (i=0; i < o_gsize; i++)
+	cilk_for (i=0; i < oldGraphSize; i++)
 	{
-		for (j=0; j < o_gsize; j++)
+		for (j=0; j < oldGraphSize; j++)
 		{
-			new_g[i*n_gsize+j] = old_g[i*o_gsize+j];
+			newGraph[i*newGraphSize+j] = oldGraph[i*oldGraphSize+j];
 		}
 	}
-
+  // If we are just increasing size by 1...
+  if (newGraphSize == oldGraphSize + 1)
+  {
+    // Lets balance out the edge colorings of this new node randomly
+    int totalZeros = oldGraphSize / 2;
+    int totalOnes = oldGraphSize - totalZeros;
+    // Only care about upper triangle, which means we only need
+    // to worry about the last column of entries and we dont
+    // care about last row, so just use oldGraphSize for i.
+    for (i = 0; i < oldGraphSize; i++)
+    {
+      j = newGraphSize-1;
+      int color = random() % 2;
+      // Keep it balanced
+      if (totalZeros <= 0)
+      {
+        color = 1;
+      }
+      else if (totalOnes <= 0)
+      {
+        color = 0;
+      }
+      // Update counts
+      if (color == 0)
+      {
+        totalZeros--;
+      }
+      else // color == 1
+      {
+        totalOnes--;
+      }
+      // Set color
+      newGraph[i*newGraphSize+j] = color;
+    }
+  }
 	return;
+}
+
+void CreateGraph(int *graph, int graphSize)
+{
+  int i,j;
+  int matrixSize = graphSize * graphSize;
+  // How many nodes in the upper diag region?
+  int halfMatrix = matrixSize / 2;
+  int halfMatrixRemainder = matrixSize % 2;
+  int halfSize = graphSize / 2;
+  int halfSizeRemainder = graphSize % 2;
+  // (halfMatrixRemainder+halfSizeRemainder) guaranteed to be even
+  int upperDiagonalSize = halfMatrix - halfSize + ((halfMatrixRemainder+halfSizeRemainder) / 2);
+  int numZeros = upperDiagonalSize / 2;
+  int numOnes = upperDiagonalSize - numZeros;
+	for (i = 0; i < graphSize; i++)
+	{
+		for (j = i+1; j < graphSize; j++)
+		{
+      int color = random() % 2;
+      // Keep it balanced
+      if (numZeros <= 0)
+      {
+        color = 1;
+      }
+      else if (numOnes <= 0)
+      {
+        color = 0;
+      }
+      // Update counts
+      if (color == 0)
+      {
+        numZeros--;
+      }
+      else // color == 1
+      {
+        numOnes--;
+      }
+      // Set the actual color
+      graph[i*graphSize+j] = color;
+    }
+  }
 }
 
 int main(int argc, char *argv[])
@@ -147,26 +225,27 @@ int main(int argc, char *argv[])
   int count, bestCount;
   int i, j, bestI, bestJ;
   int *newGraph;
-  int initialGraphSize = 8;
+  // Seed the PRNG
+  struct timeval tm;
+  gettimeofday(&tm, NULL);
+  srandom(tm.tv_sec + tm.tv_usec * 1000000ul);
 	/*
 	 * start with graph of size 8
 	 */
-	int graphSize = initialGraphSize;
+	int graphSize = INITIAL_GRAPH_SIZE;
 	int *graph = (int *)malloc(graphSize*graphSize*sizeof(int));
 	if (graph == NULL) {
 		exit(1);
 	}
+  // And evenly randomize the edge colorings
+  CreateGraph(graph, graphSize);
 	/*
 	 * make a fifo to use as the taboo list
 	 */
-	void *tabooList = FIFOInitEdge(TABOO_SIZE);
+	void *tabooList = FIFOInitEdgeCount(TABOO_SIZE);
 	if (tabooList == NULL) {
 		exit(1);
 	}
-	/*
-	 * start out with all zeros
-	 */
-	memset(graph, 0, graphSize*graphSize*sizeof(int));
 	/*
 	 * while we do not have a publishable result
 	 */
@@ -268,35 +347,38 @@ int main(int argc, char *argv[])
     // cilk_for over all processors
     cilk_for (k = 0; k < p; k++)
     {
+      int myI, myJ;
       // only look at the rows that this processor is responsible for
-      for (i = graphChunks[k].offset; i < graphChunks[k].offset+graphChunks[k].size; i++)
+      for (myI = graphChunks[k].offset; myI < graphChunks[k].offset+graphChunks[k].size; myI++)
   		{
-  			for (j = i+1; j < graphSize; j++)
+  			for (myJ = myI+1; myJ < graphSize; myJ++)
   			{
   				/*
   				 * flip it
   				 */
-  				graphs[k][i*graphSize+j] = 1 - graphs[k][i*graphSize+j];
+  				graphs[k][myI*graphSize+myJ] = 1 - graphs[k][myI*graphSize+myJ];
           edgeFlipResults[k].count = CliqueCount(graphs[k], graphSize);
   				/*
   				 * is it better and the i,j,count not taboo?
   				 */
-  				if ((edgeFlipResults[k].count < edgeFlipResults[k].bestCount) && !FIFOFindEdgeCount(tabooList, i, j, edgeFlipResults[k].count))
+  				if ((edgeFlipResults[k].count < edgeFlipResults[k].bestCount) && !FIFOFindEdgeCount(tabooList, myI, myJ, edgeFlipResults[k].count))
   //					!FIFOFindEdge(taboo_list,i,j))
   				{
   					edgeFlipResults[k].bestCount = edgeFlipResults[k].count;
-  					edgeFlipResults[k].bestI = i;
-  					edgeFlipResults[k].bestI = j;
+  					edgeFlipResults[k].bestI = myI;
+  					edgeFlipResults[k].bestJ = myJ;
   				}
 
   				/*
   				 * flip it back
   				 */
-  				graphs[k][i*graphSize+j] = 1 - graphs[k][i*graphSize+j];
+  				graphs[k][myI*graphSize+myJ] = 1 - graphs[k][myI*graphSize+myJ];
   			}
   		}
     }
     // Free memory we dont need anymore
+    for (i = 0; i < p; i++)
+      free(graphs[i]);
     free(graphs);
     free(graphChunks);
     for (i = 0; i < p; i++)
