@@ -27,13 +27,13 @@
  *
  * prints in the right format for the read routine
  */
-void PrintGraph(int *g, int gsize)
+void PrintGraph(int *g, int graphSize)
 {
   int i, j;
   
-  fprintf(stdout,"%d\n",gsize);
+  fprintf(stdout,"%d\n",graphSize);
   
-  for(i=0; i < gsize; i++)
+  for(i=0; i < graphSize; i++)
     {
       for(j=0; j < graphSize; j++)
 	{
