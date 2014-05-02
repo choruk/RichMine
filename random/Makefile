@@ -1,4 +1,4 @@
-CC = gcc
+CC = icc
 TOP = .
 INCLUDES = -I$(TOP)
 CFLAGS = -g 
