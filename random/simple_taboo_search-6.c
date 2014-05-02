@@ -139,9 +139,9 @@ int main(int argc,char *argv[])
 	int count;
 	int i;
 	int j;
-	int best_count;
-	int best_i;
-	int best_j;
+	int bestCount;
+	int bestI;
+	int bestJ;
 	void *taboo_list;
 
 	clock_t cstart = clock();
