@@ -150,6 +150,7 @@ int main(int argc,char *argv[])
 
 	char *numProc = "16";
 	__cilkrts_set_param("nworkers", numProc);
+	int p = atoi(numProc);
 
 	/*
 	 * start with graph of size 99
