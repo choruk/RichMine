@@ -243,7 +243,7 @@ int main(int argc,char *argv[])
 		 * only need to work with upper triangle of matrix =>
 		 * notice the indices
 		 */
-		best_count = BIGCOUNT;
+		bestCount = BIGCOUNT;
 		cilk_for (i = 0; i < p; i++)
 		  {
 		    edgeFlipResults[i].count = 0;
@@ -259,7 +259,7 @@ int main(int argc,char *argv[])
 		    int myI, myJ;
 		    for(myI = graphChunks[k].offset; myI < graphChunks[k].offset+graphChunks[k].size; myI++)
 		      {
-			for(myJ = myI+1; myJ < graphSize; myJ++)
+			for(myJ = myI+1; myJ < gsize; myJ++)
 			  {
 			    /*
 			     * flip it
@@ -295,7 +295,7 @@ int main(int argc,char *argv[])
 		      }
 		  }
 		
-		if(best_count == BIGCOUNT) {
+		if(bestCount == BIGCOUNT) {
 			printf("no best edge found, terminating\n");
 			exit(1);
 		}
@@ -303,13 +303,13 @@ int main(int argc,char *argv[])
 		/*
 		 * keep the best flip we saw
 		 */
-		int newColor = 1 - graph[bestI*graphSize+bestJ];
-		graph[bestI*graphSize+bestJ] = newColor;
+		int newColor = 1 - g[bestI*gsize+bestJ];
+		g[bestI*graphSize+bestJ] = newColor;
 
 		// We also need to flip this edge in all of the copied graphs
 		cilk_for (i = 0; i < p; i++)
 		  {
-		    graphs[i][bestI*graphSize+bestJ] = newColor;
+		    graphs[i][bestI*gsize+bestJ] = newColor;
 		  }
 		
 		/*
@@ -318,7 +318,7 @@ int main(int argc,char *argv[])
 		 */
 		count = CliqueCount(g,gsize);
 		//FIFOInsertEdge(taboo_list,best_i,best_j);
-		FIFOInsertEdgeCount(taboo_list,best_i,best_j,count);
+		FIFOInsertEdgeCount(taboo_list,bestI,bestJ,count);
 
 		cnow = clock();
 		elapsed = ((long)(cnow-cstart))/CLOCKS_PER_SEC;
@@ -348,7 +348,7 @@ int main(int argc,char *argv[])
 	for (i = 0; i < p; i++)
 	  free(graphs[i]);
 	free(graphs);
-	free(graph);
+	free(g);
 	
 	return(0);
 }
