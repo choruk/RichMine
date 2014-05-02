@@ -125,7 +125,7 @@ void CopyGraph(int *oldGraph, int oldGraphSize, int *newGraph, int newGraphSize)
 	if (newGraphSize < oldGraphSize)
 		return;
 
-	cilk_for (i=0; i < oldGraphSize; i++)
+	for (i=0; i < oldGraphSize; i++)
 	{
 		for (j=0; j < oldGraphSize; j++)
 		{
