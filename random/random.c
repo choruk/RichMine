@@ -5,13 +5,10 @@
 #include <string.h>
 #include <time.h>
 #include <cilk/cilk.h>
+#include "fifo.h"
 #include "random.h"
 
-#include "fifo.h"	/* for taboo list */
-
-
 #define MAXSIZE (512)
-
 #define TABOOSIZE (500)
 #define BIGCOUNT (9999999)
 
@@ -32,27 +29,25 @@
  */
 void PrintGraph(int *g, int gsize)
 {
-	int i;
-	int j;
-
-	fprintf(stdout,"%d\n",gsize);
-
-	for(i=0; i < gsize; i++)
+  int i, j;
+  
+  fprintf(stdout,"%d\n",gsize);
+  
+  for(i=0; i < gsize; i++)
+    {
+      for(j=0; j < graphSize; j++)
 	{
-		for(j=0; j < gsize; j++)
-		{
-			fprintf(stdout,"%d ",g[i*gsize+j]);
-		}
-		fprintf(stdout,"\n");
+	  fprintf(stdout,"%d ",g[i*graphSize+j]);
 	}
-
-	return;
+      fprintf(stdout,"\n");
+    }
+  
+  return;
 }
 
 void CopyGraph(int *oldGraph, int *newGraph, int graphSize)
 {
-  int i;
-  int j;
+  int i, j;
   
   for (i=0; i < graphSize; i++)
     {
@@ -64,291 +59,288 @@ void CopyGraph(int *oldGraph, int *newGraph, int graphSize)
 }
 
 /*
- ***
- *** returns the number of monochromatic cliques in the graph presented to
- *** it
- ***
- *** graph is stored in row-major order
- *** only checks values above diagonal
- */
-
-int CliqueCount(int *g, int gsize)
+***
+*** returns the number of monochromatic cliques in the graph presented to
+*** it
+***
+*** graph is stored in row-major order
+*** only checks values above diagonal
+*/
+int CliqueCount(int *g, int graphSize)
 {
-    int i;
-    int j;
-    int k;
-    int l;
-    int m;
-    int n;
-    int count=0;
-    int sgsize = 6;
+  int i;
+  int j;
+  int k;
+  int l;
+  int m;
+  int n;
+  int count = 0;
+  int subgraphSize = 6;
     
-    for(i=0;i < gsize-sgsize+1; i++)
+  for(i=0;i < graphSize-subgraphSize+1; i++)
     {
-	for(j=i+1;j < gsize-sgsize+2; j++)
-        {
-	    for(k=j+1;k < gsize-sgsize+3; k++) 
-            { 
-		if((g[i*gsize+j] == g[i*gsize+k]) && 
-		   (g[i*gsize+j] == g[j*gsize+k]))
+      for(j=i+1;j < graphSize-subgraphSize+2; j++)
+	{
+	  for(k=j+1;k < graphSize-subgraphSize+3; k++) 
+	    { 
+	      if((g[i*graphSize+j] == g[i*graphSize+k]) && 
+		 (g[i*graphSize+j] == g[j*graphSize+k]))
 		{
-		    for(l=k+1;l < gsize-sgsize+4; l++) 
+		  for(l=k+1;l < graphSize-subgraphSize+4; l++) 
 		    { 
-			if((g[i*gsize+j] == g[i*gsize+l]) && 
-			   (g[i*gsize+j] == g[j*gsize+l]) && 
-			   (g[i*gsize+j] == g[k*gsize+l]))
+		      if((g[i*graphSize+j] == g[i*graphSize+l]) && 
+			 (g[i*graphSize+j] == g[j*graphSize+l]) && 
+			 (g[i*graphSize+j] == g[k*graphSize+l]))
 			{
-			    for(m=l+1;m < gsize-sgsize+5; m++) 
+			  for(m=l+1;m < graphSize-subgraphSize+5; m++) 
 			    {
-				if((g[i*gsize+j] == g[i*gsize+m]) && 
-				   (g[i*gsize+j] == g[j*gsize+m]) &&
-				   (g[i*gsize+j] == g[k*gsize+m]) && 
-				   (g[i*gsize+j] == g[l*gsize+m])) {
-					for(n=m+1; n < gsize-sgsize+6; n++)
-					{
-						if((g[i*gsize+j]
-							== g[i*gsize+n]) &&
-						   (g[i*gsize+j] 
-							== g[j*gsize+n]) &&
-						   (g[i*gsize+j] 
-							== g[k*gsize+n]) &&
-						   (g[i*gsize+j] 
-							== g[l*gsize+n]) &&
-						   (g[i*gsize+j] 
-							== g[m*gsize+n])) {
-			      					count++;
-						}
-					}
-				}
+			      if((g[i*graphSize+j] == g[i*graphSize+m]) && 
+				 (g[i*graphSize+j] == g[j*graphSize+m]) &&
+				 (g[i*graphSize+j] == g[k*graphSize+m]) && 
+				 (g[i*graphSize+j] == g[l*graphSize+m])) {
+				for(n=m+1; n < graphSize-subgraphSize+6; n++)
+				  {
+				    if((g[i*graphSize+j]
+					== g[i*graphSize+n]) &&
+				       (g[i*graphSize+j] 
+					== g[j*graphSize+n]) &&
+				       (g[i*graphSize+j] 
+					== g[k*graphSize+n]) &&
+				       (g[i*graphSize+j] 
+					== g[l*graphSize+n]) &&
+				       (g[i*graphSize+j] 
+					== g[m*graphSize+n])) {
+				      count++;
+				    }
+				  }
+			      }
 			    }
 			}
 		    }
 		}
 	    }
-         }
-     }
-    return(count);
+	}
+    }
+  return(count);
 }
 
 
 int main(int argc,char *argv[])
 {
-	int *g;
-	int *new_g;
-	int gsize;
-	int count;
-	int i;
-	int j;
-	int bestCount;
-	int bestI;
-	int bestJ;
-	void *taboo_list;
+  int *g;
+  int *new_g;
+  int graphSize;
+  int count;
+  int i, j;
+  int bestCount;
+  int bestI, bestJ;
+  void *tabooList;
 
-	clock_t cstart = clock();
-	clock_t cnow = 0;
-	long elapsed, sElapsed, mElapsed, hElapsed;
+  clock_t cstart = clock();
+  clock_t cnow = 0;
+  long elapsed, sElapsed, mElapsed, hElapsed;
 
-	char *numProc = "16";
-	__cilkrts_set_param("nworkers", numProc);
-	int p = atoi(numProc);
+  char *numProc = "16";
+  __cilkrts_set_param("nworkers", numProc);
+  int p = atoi(numProc);
 
-	/*
-	 * start with graph of size 99
-	 */
-	gsize = 99;
-	g = (int *)malloc(gsize*gsize*sizeof(int));
-	if(g == NULL) {
-		exit(1);
-	}
+  /*
+   * start with graph of size 99
+   */
+  graphSize = 99;
+  g = (int *)malloc(graphSize*graphSize*sizeof(int));
+  if(g == NULL) {
+    exit(1);
+  }
 
-	/*
-	 * randomize buffer
-	 */
-	size_t m = 0;
-	for(m = 0; m < gsize*gsize; m++)
-	  {
-	    g[m] = rand() % 2;
-	  }
+  /*
+   * randomize buffer
+   */
+  size_t m = 0;
+  for(m = 0; m < graphSize*graphSize; m++)
+    {
+      g[m] = rand() % 2;
+    }
 	
-	// initial allocation of graphs for each processor
-	int **graphs = (int **)malloc(p * sizeof(int*));
-	cilk_for(i = 0; i < p; i++)
-	  {
-	    graphs[i] = (int *)malloc(gsize*gsize*sizeof(int));
-	    CopyGraph(g, graphs[i], gsize);
-	  }
+  // initial allocation of graphs for each processor
+  int **graphs = (int **)malloc(p * sizeof(int*));
+  cilk_for(i = 0; i < p; i++)
+    {
+      graphs[i] = (int *)malloc(graphSize*graphSize*sizeof(int));
+      CopyGraph(g, graphs[i], graphSize);
+    }
 	
-	// divide rows of matrix up evenly amongst processors
-	struct GraphChunk *graphChunks = (struct GraphChunk *)malloc(p * sizeof(struct GraphChunk));
-	// graphSize == # of rows
-	int chunkSize = gsize / p;
-	int leftOver = gsize % p;
-	for (i = 0; i < p; i++)
-	  {
-	    graphChunks[i].size = chunkSize;
-	    graphChunks[i].offset = 0;
-	    if (leftOver > 0)
-	      {
-		graphChunks[i].size++;
-		leftOver--;
-	      }
-	    if (i != 0)
-	      {
-		graphChunks[i].offset = graphChunks[i-1].offset + graphChunks[i-1].size;
-	      }
-	  }
-	
-	// malloc edge flip results
-	struct EdgeFlip *edgeFlipResults = (struct EdgeFlip *)malloc(p * sizeof(struct EdgeFlip));
-
-	/*
-	 * make a fifo to use as the taboo list
-	 */
-	taboo_list = FIFOInitEdge(TABOOSIZE);
-	if(taboo_list == NULL) {
-		exit(1);
-	}
-	
-	/*
-	 * while we do not have a publishable result
-	 */
-	while(gsize < 102)
+  // divide rows of matrix up evenly amongst processors
+  struct GraphChunk *graphChunks = (struct GraphChunk *)malloc(p * sizeof(struct GraphChunk));
+  // graphSize == # of rows
+  int chunkSize = graphSize / p;
+  int leftOver = graphSize % p;
+  for (i = 0; i < p; i++)
+    {
+      graphChunks[i].size = chunkSize;
+      graphChunks[i].offset = 0;
+      if (leftOver > 0)
 	{
-		/*
-		 * find out how we are doing
-		 */
-		count = CliqueCount(g,gsize);
+	  graphChunks[i].size++;
+	  leftOver--;
+	}
+      if (i != 0)
+	{
+	  graphChunks[i].offset = graphChunks[i-1].offset + graphChunks[i-1].size;
+	}
+    }
+	
+  // malloc edge flip results
+  struct EdgeFlip *edgeFlipResults = (struct EdgeFlip *)malloc(p * sizeof(struct EdgeFlip));
 
-		/*
-		 * if we have a counter example
-		 */
-		if(count == 0)
-		{
-			printf("Eureka!  Counter-example found!\n");
-			PrintGraph(g,gsize);
+  /*
+   * make a fifo to use as the taboo list
+   */
+  tabooList = FIFOInitEdge(TABOOSIZE);
+  if(tabooList == NULL) {
+    exit(1);
+  }
+	
+  /*
+   * while we do not have a publishable result
+   */
+  while(graphSize < 102)
+    {
+      /*
+       * find out how we are doing
+       */
+      count = CliqueCount(g,graphSize);
 
-			/*
-			 * keep going
-			 */
-			continue;
-		}
+      /*
+       * if we have a counter example
+       */
+      if(count == 0)
+	{
+	  printf("Eureka!  Counter-example found!\n");
+	  PrintGraph(g,graphSize);
 
-		/*
-		 * otherwise, we need to consider flipping an edge
-		 *
-		 * let's speculative flip each edge, record the new count,
-		 * and unflip the edge.  We'll then remember the best flip and
-		 * keep it next time around
-		 *
-		 * only need to work with upper triangle of matrix =>
-		 * notice the indices
-		 */
-		bestCount = BIGCOUNT;
-		cilk_for (i = 0; i < p; i++)
-		  {
-		    edgeFlipResults[i].count = 0;
-		    edgeFlipResults[i].bestCount = bestCount;
-		    edgeFlipResults[i].bestI = 0;
-		    edgeFlipResults[i].bestJ = 0;
-		  }
-
-		// cilk_for over all processors
-		int k;
-		cilk_for(k = 0; k < p; k++)
-		  {
-		    int myI, myJ;
-		    for(myI = graphChunks[k].offset; myI < graphChunks[k].offset+graphChunks[k].size; myI++)
-		      {
-			for(myJ = myI+1; myJ < gsize; myJ++)
-			  {
-			    /*
-			     * flip it
-			     */
-			    graphs[k][myI*gsize+myJ] = 1 - graphs[k][myI*gsize+myJ];
-			    edgeFlipResults[k].count = CliqueCount(graphs[k], gsize);
-			    
-			    /*
-			     * is it better and the i,j,count not taboo?
-			     */
-			    if((edgeFlipResults[k].count < edgeFlipResults[k].bestCount) && !FIFOFindEdgeCount(taboo_list, myI, myJ, edgeFlipResults[k].count))
-			      {
-				edgeFlipResults[k].bestCount = edgeFlipResults[k].count;
-				edgeFlipResults[k].bestI = myI;
-				edgeFlipResults[k].bestJ = myJ;
-			      }
-			    
-			    /*
-			     * flip it back
-			     */
-			    graphs[k][myI*gsize+myJ] = 1 - graphs[k][myI*gsize+myJ];
-			  }
-		      }
-		  }
-
-		for (i = 0; i < p; i++)
-		  {
-		    if (edgeFlipResults[i].bestCount < bestCount)
-		      {
-			bestCount = edgeFlipResults[i].bestCount;
-			bestI = edgeFlipResults[i].bestI;
-			bestJ = edgeFlipResults[i].bestJ;
-		      }
-		  }
-		
-		if(bestCount == BIGCOUNT) {
-			printf("no best edge found, terminating\n");
-			exit(1);
-		}
-		
-		/*
-		 * keep the best flip we saw
-		 */
-		int newColor = 1 - g[bestI*gsize+bestJ];
-		g[bestI*gsize+bestJ] = newColor;
-
-		// We also need to flip this edge in all of the copied graphs
-		cilk_for (i = 0; i < p; i++)
-		  {
-		    graphs[i][bestI*gsize+bestJ] = newColor;
-		  }
-		
-		/*
-		 * taboo this graph configuration so that we don't visit
-		 * it again
-		 */
-		count = CliqueCount(g,gsize);
-		//FIFOInsertEdge(taboo_list,best_i,best_j);
-		FIFOInsertEdgeCount(taboo_list,bestI,bestJ,count);
-
-		cnow = clock();
-		elapsed = ((long)(cnow-cstart))/CLOCKS_PER_SEC;
-		sElapsed = elapsed % 60;
-		mElapsed = elapsed / 60;
-		hElapsed = elapsed / 3600;
-		
-		printf("%luh%lum%lus - ce size: %d, best_count: %d, best edge: (%d,%d), new color: %d\n",
-		       hElapsed,
-		       mElapsed,
-		       sElapsed,
-			gsize,
-			bestCount,
-			bestI,
-			bestJ,
-			g[bestI*gsize+bestJ]);
-
-		/*
-		 * rinse and repeat
-		 */
+	  /*
+	   * keep going
+	   */
+	  continue;
 	}
 
-	// clean up
-	FIFODeleteGraph(taboo_list);
-	free(edgeFlipResults);
-	free(graphChunks);
-	for (i = 0; i < p; i++)
-	  free(graphs[i]);
-	free(graphs);
-	free(g);
+      /*
+       * otherwise, we need to consider flipping an edge
+       *
+       * let's speculative flip each edge, record the new count,
+       * and unflip the edge.  We'll then remember the best flip and
+       * keep it next time around
+       *
+       * only need to work with upper triangle of matrix =>
+       * notice the indices
+       */
+      bestCount = BIGCOUNT;
+      cilk_for (i = 0; i < p; i++)
+	{
+	  edgeFlipResults[i].count = 0;
+	  edgeFlipResults[i].bestCount = bestCount;
+	  edgeFlipResults[i].bestI = 0;
+	  edgeFlipResults[i].bestJ = 0;
+	}
+
+      // cilk_for over all processors
+      int k;
+      cilk_for(k = 0; k < p; k++)
+	{
+	  int myI, myJ;
+	  for(myI = graphChunks[k].offset; myI < graphChunks[k].offset+graphChunks[k].size; myI++)
+	    {
+	      for(myJ = myI+1; myJ < graphSize; myJ++)
+		{
+		  /*
+		   * flip it
+		   */
+		  graphs[k][myI*graphSize+myJ] = 1 - graphs[k][myI*graphSize+myJ];
+		  edgeFlipResults[k].count = CliqueCount(graphs[k], graphSize);
+			    
+		  /*
+		   * is it better and the i,j,count not taboo?
+		   */
+		  if((edgeFlipResults[k].count < edgeFlipResults[k].bestCount) && !FIFOFindEdgeCount(tabooList, myI, myJ, edgeFlipResults[k].count))
+		    {
+		      edgeFlipResults[k].bestCount = edgeFlipResults[k].count;
+		      edgeFlipResults[k].bestI = myI;
+		      edgeFlipResults[k].bestJ = myJ;
+		    }
+			    
+		  /*
+		   * flip it back
+		   */
+		  graphs[k][myI*graphSize+myJ] = 1 - graphs[k][myI*graphSize+myJ];
+		}
+	    }
+	}
+
+      for (i = 0; i < p; i++)
+	{
+	  if (edgeFlipResults[i].bestCount < bestCount)
+	    {
+	      bestCount = edgeFlipResults[i].bestCount;
+	      bestI = edgeFlipResults[i].bestI;
+	      bestJ = edgeFlipResults[i].bestJ;
+	    }
+	}
+		
+      if(bestCount == BIGCOUNT) {
+	printf("no best edge found, terminating\n");
+	exit(1);
+      }
+		
+      /*
+       * keep the best flip we saw
+       */
+      int newColor = 1 - g[bestI*graphSize+bestJ];
+      g[bestI*graphSize+bestJ] = newColor;
+
+      // We also need to flip this edge in all of the copied graphs
+      cilk_for (i = 0; i < p; i++)
+	{
+	  graphs[i][bestI*graphSize+bestJ] = newColor;
+	}
+		
+      /*
+       * taboo this graph configuration so that we don't visit
+       * it again
+       */
+      count = CliqueCount(g,graphSize);
+      //FIFOInsertEdge(tabooList,best_i,best_j);
+      FIFOInsertEdgeCount(tabooList,bestI,bestJ,count);
+
+      cnow = clock();
+      elapsed = ((long)(cnow-cstart))/CLOCKS_PER_SEC;
+      sElapsed = elapsed % 60;
+      mElapsed = elapsed / 60;
+      hElapsed = elapsed / 3600;
+		
+      printf("%luh%lum%lus - ce size: %d, best_count: %d, best edge: (%d,%d), new color: %d\n",
+	     hElapsed,
+	     mElapsed,
+	     sElapsed,
+	     graphSize,
+	     bestCount,
+	     bestI,
+	     bestJ,
+	     g[bestI*graphSize+bestJ]);
+
+      /*
+       * rinse and repeat
+       */
+    }
+
+  // clean up
+  FIFODeleteGraph(tabooList);
+  free(edgeFlipResults);
+  free(graphChunks);
+  for (i = 0; i < p; i++)
+    free(graphs[i]);
+  free(graphs);
+  free(g);
 	
-	return(0);
+  return(0);
 }
