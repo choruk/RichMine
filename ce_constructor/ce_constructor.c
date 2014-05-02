@@ -61,7 +61,7 @@ int CliqueCount(int *g, int gsize)
   int n;
   int count=0;
   int sgsize = SYMMETRIC_RAMSEY_NUMBER;
-    
+  
   for (i = 0; i < gsize-sgsize+1; i++)
   {
     for (j = i+1; j < gsize-sgsize+2; j++)
@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
   gettimeofday(&tm, NULL);
   srandom(tm.tv_sec + tm.tv_usec * 1000000ul);
 	/*
-	 * start with graph of size 8
+	 * start with graph of size INITIAL_GRAPH_SIZE
 	 */
 	int graphSize = INITIAL_GRAPH_SIZE;
 	int *graph = (int *)malloc(graphSize*graphSize*sizeof(int));
@@ -239,6 +239,32 @@ int main(int argc, char *argv[])
 	}
   // And evenly randomize the edge colorings
   CreateGraph(graph, graphSize);
+  // Need a copy of graph for each processor
+  int **graphs = (int **)malloc(p * sizeof(int*));
+  cilk_for (i = 0; i < p; i++)
+  {
+    graphs[i] = (int *)malloc(graphSize*graphSize*sizeof(int));
+    CopyGraph(graph, graphSize, graphs[i], graphSize);
+  }
+  // Now we need to divide the "rows" of the matrix up evenly among processors
+  struct GraphChunk *graphChunks = (struct GraphChunk *)malloc(p * sizeof(struct GraphChunk));
+  // graphSize == # of rows
+  int chunkSize = graphSize / p;
+  int leftOver = graphSize % p;
+  for (i = 0; i < p; i++)
+  {
+    graphChunks[i].size = chunkSize;
+    graphChunks[i].offset = 0;
+    if (leftOver > 0)
+    {
+      graphChunks[i].size++;
+      leftOver--;
+    }
+    if (i != 0)
+    {
+      graphChunks[i].offset = graphChunks[i-1].offset + graphChunks[i-1].size;
+    }
+  }
 	/*
 	 * make a fifo to use as the taboo list
 	 */
@@ -288,6 +314,36 @@ int main(int argc, char *argv[])
 			free(graph);
 			graph = newGraph;
 			graphSize = graphSize+1;
+      // Need to throw away old copies and make a new one for each processor
+      for (i = 0; i < p; i++)
+        free(graphs[i]);
+//      free(graphs);
+//      graphs = (int **)malloc(p * sizeof(int*));
+      cilk_for (i = 0; i < p; i++)
+      {
+        graphs[i] = (int *)malloc(graphSize*graphSize*sizeof(int));
+        CopyGraph(graph, graphSize, graphs[i], graphSize);
+      }
+      // Now we need to redivide up the rows of the matrix
+      free(graphChunks);
+      graphChunks = (struct GraphChunk *)malloc(p * sizeof(struct GraphChunk));
+      // graphSize == # of rows
+      chunkSize = graphSize / p;
+      leftOver = graphSize % p;
+      for (i = 0; i < p; i++)
+      {
+        graphChunks[i].size = chunkSize;
+        graphChunks[i].offset = 0;
+        if (leftOver > 0)
+        {
+          graphChunks[i].size++;
+          leftOver--;
+        }
+        if (i != 0)
+        {
+          graphChunks[i].offset = graphChunks[i-1].offset + graphChunks[i-1].size;
+        }
+      }
 			/*
 			 * reset the taboo list for the new graph
 			 */
@@ -307,33 +363,6 @@ int main(int argc, char *argv[])
 		 * only need to work with upper triangle of matrix =>
 		 * notice the indices
 		 */
-    // Need a copy of graph for each processor
-    int **graphs = (int **)malloc(p * sizeof(int*));
-    cilk_for (i = 0; i < p; i++)
-    {
-      graphs[i] = (int *)malloc(graphSize*graphSize*sizeof(int));
-      CopyGraph(graph, graphSize, graphs[i], graphSize);
-    }
-    // Now we need to divide the "rows" of the matrix up evenly among processors
-    struct GraphChunk *graphChunks = (struct GraphChunk *)malloc(p * sizeof(struct GraphChunk));
-    // graphSize == # of rows
-    int chunkSize = graphSize / p;
-    int leftOver = graphSize % p;
-    for (i = 0; i < p; i++)
-    {
-      graphChunks[i].size = chunkSize;
-      graphChunks[i].offset = 0;
-      if (leftOver > 0)
-      {
-        graphChunks[i].size++;
-        leftOver--;
-      }
-      if (i != 0)
-      {
-        graphChunks[i].offset = graphChunks[i-1].offset + graphChunks[i-1].size;
-      }
-    }
-    // We use this to check later
     bestCount = BIG_COUNT;
     struct EdgeFlip *edgeFlipResults = (struct EdgeFlip *)malloc(p * sizeof(struct EdgeFlip));
     cilk_for (i = 0; i < p; i++)
@@ -376,11 +405,6 @@ int main(int argc, char *argv[])
   			}
   		}
     }
-    // Free memory we dont need anymore
-    for (i = 0; i < p; i++)
-      free(graphs[i]);
-    free(graphs);
-    free(graphChunks);
     for (i = 0; i < p; i++)
     {
       if (edgeFlipResults[i].bestCount < bestCount)
@@ -390,6 +414,7 @@ int main(int argc, char *argv[])
         bestJ = edgeFlipResults[i].bestJ;
       }
     }
+    // Free memory when we are done with it
     free(edgeFlipResults);
     // Did our move make an improvement?
 		if (bestCount == BIG_COUNT) {
@@ -399,7 +424,13 @@ int main(int argc, char *argv[])
 		/*
 		 * keep the best flip we saw
 		 */
-		graph[bestI*graphSize+bestJ] = 1 - graph[bestI*graphSize+bestJ];
+    int newColor = 1 - graph[bestI*graphSize+bestJ];
+		graph[bestI*graphSize+bestJ] = newColor;
+    // We also need to flip this edge in all of the copied graphs
+    cilk_for (i = 0; i < p; i++)
+    {
+      graphs[i][bestI*graphSize+bestJ] = newColor;
+    }
 		/*
 		 * taboo this graph configuration so that we don't visit
 		 * it again
