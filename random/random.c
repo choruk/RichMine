@@ -5,7 +5,7 @@
 #include <string.h>
 #include <time.h>
 #include <cilk/cilk.h>
-#include "simple_taboo_search-6.h"
+#include "random.h"
 
 #include "fifo.h"	/* for taboo list */
 

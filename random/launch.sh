@@ -7,4 +7,4 @@
 #SBATCH -p normal
 #SBATCH --mail-user=mhinson@umail.ucsb.edu
 #SBATCH --mail-type=all
-./simple_taboo_search-6
+./random

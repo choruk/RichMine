@@ -10,12 +10,12 @@ PRED=.
 BOBJ=$(COMMON)/jval.o $(COMMON)/jrb.o $(COMMON)/dllist.o $(COMMON)/fifo.o
 LIBS= -lm 
 
-PROGRAMS = simple_taboo_search-6
+PROGRAMS = random
 
 all: $(PROGRAMS)
 
-simple_taboo_search-6: simple_taboo_search-6.c $(INCL) ${BOBJ}
-	$(COMPILE) ${INCLUDES} -o simple_taboo_search-6 simple_taboo_search-6.c $(BOBJ) $(LIBS)
+random: random.c $(INCL) ${BOBJ}
+	$(COMPILE) ${INCLUDES} -o random random.c $(BOBJ) $(LIBS)
 
 fifo.o: fifo.c fifo.h jrb.h jval.h dllist.h
 	$(COMPILE) ${INCLUDES} -c fifo.c
