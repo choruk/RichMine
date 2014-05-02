@@ -5,7 +5,7 @@
 #include <string.h>
 #include <time.h>
 #include <cilk/cilk.h>
-#include "ce_constructor.h"
+#include "simple_taboo_search-6.h"
 
 #include "fifo.h"	/* for taboo list */
 
@@ -172,7 +172,7 @@ int main(int argc,char *argv[])
 	
 	// initial allocation of graphs for each processor
 	int **graphs = (int **)malloc(p * sizeof(int*));
-	cilk_for(i = 0; i < p, i++)
+	cilk_for(i = 0; i < p; i++)
 	  {
 	    graphs[i] = (int *)malloc(gsize*gsize*sizeof(int));
 	    CopyGraph(g, gsize, graphs[i], gsize);
