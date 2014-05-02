@@ -265,12 +265,12 @@ int main(int argc,char *argv[])
 			     * flip it
 			     */
 			    graphs[k][myI*gsize+myJ] = 1 - graphs[k][myI*gsize+myJ];
-			    edgeFlipResults[k].count = CliqueCount(graphs[k], graphSize);
+			    edgeFlipResults[k].count = CliqueCount(graphs[k], gsize);
 			    
 			    /*
 			     * is it better and the i,j,count not taboo?
 			     */
-			    if((edgeFlipResults[k].count < edgeFlipResults[k].bestCount) && !FIFOFindEdgeCount(tabooList, myI, myJ, edgeFlipResults[k].count))
+			    if((edgeFlipResults[k].count < edgeFlipResults[k].bestCount) && !FIFOFindEdgeCount(taboo_list, myI, myJ, edgeFlipResults[k].count))
 			      {
 				edgeFlipResults[k].bestCount = edgeFlipResults[k].count;
 				edgeFlipResults[k].bestI = myI;
@@ -304,7 +304,7 @@ int main(int argc,char *argv[])
 		 * keep the best flip we saw
 		 */
 		int newColor = 1 - g[bestI*gsize+bestJ];
-		g[bestI*graphSize+bestJ] = newColor;
+		g[bestI*gsize+bestJ] = newColor;
 
 		// We also need to flip this edge in all of the copied graphs
 		cilk_for (i = 0; i < p; i++)
