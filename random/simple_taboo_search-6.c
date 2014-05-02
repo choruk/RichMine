@@ -175,7 +175,7 @@ int main(int argc,char *argv[])
 	cilk_for(i = 0; i < p; i++)
 	  {
 	    graphs[i] = (int *)malloc(gsize*gsize*sizeof(int));
-	    CopyGraph(g, gsize, graphs[i], gsize);
+	    CopyGraph(g, graphs[i], gsize);
 	  }
 	
 	// divide rows of matrix up evenly amongst processors
