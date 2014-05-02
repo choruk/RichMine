@@ -13,8 +13,8 @@
 
 void printUsageAndExit()
 {
-  printf("Unexpected usage!\n");
-  printf("usage: ./ce_constructor []");
+  fprintf(stderr, "Unexpected usage!\n");
+  fprintf(stderr, "usage: ./ce_constructor []");
   exit(-1);
 }
 
@@ -219,7 +219,7 @@ int main(int argc, char *argv[])
     numProc = argv[1];
   }
   __cilkrts_set_param("nworkers", numProc);
-  printf("# of workers: %d\n", __cilkrts_get_nworkers());
+  fprintf(stdout, "# of workers: %d\n", __cilkrts_get_nworkers());
   int p = atoi(numProc);
   int count, bestCount;
   int i, j, bestI, bestJ;
@@ -286,7 +286,7 @@ int main(int argc, char *argv[])
 		 */
 		if (count == 0)
 		{
-			printf("Eureka!  Counter-example found!\n");
+			fprintf(stdout, "Eureka!  Counter-example found!\n");
 			PrintGraph(graph, graphSize);
 			/*
 			 * make a new graph one size bigger
@@ -413,10 +413,9 @@ int main(int argc, char *argv[])
         bestJ = edgeFlipResults[i].bestJ;
       }
     }
-    
     // Did our move make an improvement?
 		if (bestCount == BIG_COUNT) {
-			printf("no best edge found, terminating\n");
+			fprintf(stderr, "no best edge found, terminating\n");
 			exit(1);
 		}
 		/*
@@ -437,7 +436,7 @@ int main(int argc, char *argv[])
     // FIFOInsertEdge(tabooList, bestI, bestJ);
     FIFOInsertEdgeCount(tabooList, bestI, bestJ, count);
 
-		printf("ce size: %d, best_count: %d, best edge: (%d,%d), new color: %d\n",
+		fprintf(stdout, "ce size: %d, best_count: %d, best edge: (%d,%d), new color: %d\n",
 			graphSize,
 			bestCount,
 			bestI,
