@@ -264,7 +264,7 @@ int main(int argc,char *argv[])
 			    /*
 			     * flip it
 			     */
-			    graphs[k][myI*graphSize+myJ] = 1 - graphs[k][myI*graphSize+myJ];
+			    graphs[k][myI*gsize+myJ] = 1 - graphs[k][myI*gsize+myJ];
 			    edgeFlipResults[k].count = CliqueCount(graphs[k], graphSize);
 			    
 			    /*
@@ -280,7 +280,7 @@ int main(int argc,char *argv[])
 			    /*
 			     * flip it back
 			     */
-			    graphs[k][myI*graphSize+myJ] = 1 - graphs[k][myI*graphSize+myJ];
+			    graphs[k][myI*gsize+myJ] = 1 - graphs[k][myI*gsize+myJ];
 			  }
 		      }
 		  }
@@ -331,10 +331,10 @@ int main(int argc,char *argv[])
 		       mElapsed,
 		       sElapsed,
 			gsize,
-			best_count,
-			best_i,
-			best_j,
-			g[best_i*gsize+best_j]);
+			bestCount,
+			bestI,
+			bestJ,
+			g[bestI*gsize+bestJ]);
 
 		/*
 		 * rinse and repeat
