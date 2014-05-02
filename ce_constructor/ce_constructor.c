@@ -118,7 +118,6 @@ void CopyGraph(int *oldGraph, int oldGraphSize, int *newGraph, int newGraphSize)
 {
 	int i;
 	int j;
-
 	/*
 	 * new g must be bigger or equal
 	 */
@@ -265,6 +264,7 @@ int main(int argc, char *argv[])
       graphChunks[i].offset = graphChunks[i-1].offset + graphChunks[i-1].size;
     }
   }
+  struct EdgeFlip *edgeFlipResults = (struct EdgeFlip *)malloc(p * sizeof(struct EdgeFlip));
 	/*
 	 * make a fifo to use as the taboo list
 	 */
@@ -364,7 +364,6 @@ int main(int argc, char *argv[])
 		 * notice the indices
 		 */
     bestCount = BIG_COUNT;
-    struct EdgeFlip *edgeFlipResults = (struct EdgeFlip *)malloc(p * sizeof(struct EdgeFlip));
     cilk_for (i = 0; i < p; i++)
     {
       edgeFlipResults[i].count = 0;
@@ -414,8 +413,7 @@ int main(int argc, char *argv[])
         bestJ = edgeFlipResults[i].bestJ;
       }
     }
-    // Free memory when we are done with it
-    free(edgeFlipResults);
+    
     // Did our move make an improvement?
 		if (bestCount == BIG_COUNT) {
 			printf("no best edge found, terminating\n");
@@ -452,6 +450,12 @@ int main(int argc, char *argv[])
 	}
   // Clean up
 	FIFODeleteGraph(tabooList);
-  
+  // Free memory when we are done with it
+  free(edgeFlipResults);
+  free(graphChunks);
+  for (i = 0; i < p; i++)
+    free(graphs[i]);
+  free(graphs);
+  free(graph);
   return 0;
 }
