@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J randomCilk
+#SBATCH -J ramseyCilkRandom
 #SBATCH -o stdout.%j
 #SBATCH -e stderr.%j
 #SBATCH -n 1
