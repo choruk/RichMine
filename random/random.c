@@ -315,7 +315,7 @@ int main(int argc,char *argv[])
       cnow = clock();
       elapsed = ((long)(cnow-cstart))/CLOCKS_PER_SEC;
       sElapsed = elapsed % 60;
-      mElapsed = elapsed / 60;
+      mElapsed = (elapsed / 60) % 60;
       hElapsed = elapsed / 3600;
 		
       printf("%luh%lum%lus - ce size: %d, best_count: %d, best edge: (%d,%d), new color: %d\n",
