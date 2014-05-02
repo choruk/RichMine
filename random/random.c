@@ -124,6 +124,11 @@ int CliqueCount(int *g, int graphSize)
   return(count);
 }
 
+double getSeconds() {
+  struct timeval tp;
+  gettimeofday(&tp, NULL);
+  return (double) (tp.tv_sec + ((1e-6)*tp.tv_usec));
+}
 
 int main(int argc,char *argv[])
 {
@@ -136,8 +141,8 @@ int main(int argc,char *argv[])
   int bestI, bestJ;
   void *tabooList;
 
-  clock_t cstart = clock();
-  clock_t cnow = 0;
+  double startTime = getSeconds();
+  double currentTime;
   long elapsed, sElapsed, mElapsed, hElapsed;
 
   char *numProc = "16";
@@ -312,8 +317,8 @@ int main(int argc,char *argv[])
       //FIFOInsertEdge(tabooList,best_i,best_j);
       FIFOInsertEdgeCount(tabooList,bestI,bestJ,count);
 
-      cnow = clock();
-      elapsed = ((long)(cnow-cstart))/CLOCKS_PER_SEC;
+      currentTime = getSeconds();
+      elapsed = currentTime - startTime;
       sElapsed = elapsed % 60;
       mElapsed = (elapsed / 60) % 60;
       hElapsed = elapsed / 3600;
