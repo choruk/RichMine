@@ -41,6 +41,7 @@ void PrintGraph(int *g, int graphSize)
 	}
       fprintf(stdout,"\n");
     }
+  fflush(stdout)
   
   return;
 }
@@ -222,6 +223,7 @@ int main(int argc,char *argv[])
       if(count == 0)
 	{
 	  printf("Eureka!  Counter-example found!\n");
+	  fflush(stdout);
 	  PrintGraph(g,graphSize);
 
 	  /*
@@ -332,6 +334,7 @@ int main(int argc,char *argv[])
 	     bestI,
 	     bestJ,
 	     g[bestI*graphSize+bestJ]);
+      fflush(stdout);
 
       /*
        * rinse and repeat
