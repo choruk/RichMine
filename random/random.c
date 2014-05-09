@@ -41,7 +41,7 @@ void PrintGraph(int *g, int graphSize)
 	}
       fprintf(stdout,"\n");
     }
-  fflush(stdout)
+  fflush(stdout);
   
   return;
 }
