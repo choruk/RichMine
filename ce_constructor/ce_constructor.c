@@ -258,14 +258,14 @@ int main(int argc, char *argv[])
 {
   double executionStartTime = getSeconds();
   char *numProc = "4";
-  int initalGraphSize = INITIAL_GRAPH_SIZE;
+  int initialGraphSize = INITIAL_GRAPH_SIZE;
   if (argc > 1)
   {
     numProc = argv[1];
   }
   if (argc > 2)
   {
-    initalGraphSize = atoi(argv[2]);
+    initialGraphSize = atoi(argv[2]);
   }
   __cilkrts_set_param("nworkers", numProc);
   fprintf(stdout, "# of workers: %d\n", __cilkrts_get_nworkers());
@@ -281,7 +281,7 @@ int main(int argc, char *argv[])
   /*
   * start with graph of size INITIAL_GRAPH_SIZE
   */
-  int graphSize = INITIAL_GRAPH_SIZE;
+  int graphSize = initialGraphSize;
   int *graph = (int *)malloc(graphSize*graphSize*sizeof(int));
   if (graph == NULL) {
     exit(1);
