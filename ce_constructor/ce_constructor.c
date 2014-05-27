@@ -323,6 +323,12 @@ int main(int argc, char *argv[])
     exit(1);
   }
   /*
+   * we will use this large random number to append to filenames as a
+   * simple approach to avoiding filename collisions, but keeping all
+   * files associated with a single run recognizable
+  */
+  double randomNum = random() % 1000000000;
+  /*
   * while we do not have a publishable result
   */
   fprintf(stdout, "Initialization took %f seconds.\n", getSeconds() - executionStartTime);
@@ -342,10 +348,14 @@ int main(int argc, char *argv[])
       fprintf(stdout, "Eureka!  Counter-example found!\n");
       fflush(stdout);
       PrintGraph(graph, graphSize);
-      // Separate file for the graphs that are actually counter-examples
-      writeGraphToFile(graph, graphSize, "ce_constructor-solution-graph.out");
+      /* 
+       * Use a separate file for the graphs that are actually counter-examples
+      */
+      char ceFileName[50];
+      sprintf(ceFileName, "ce_constructor-solution-graph-%f.out", randomNum);
+      writeGraphToFile(graph, graphSize, ceFileName);
       /*
-      * make a new graph one size bigger
+       * make a new graph one size bigger
       */
       newGraph = (int *)malloc((graphSize+1) * (graphSize+1) * sizeof(int));
       if (newGraph == NULL)
@@ -517,7 +527,9 @@ int main(int argc, char *argv[])
      * write the current graph to a file as well, as a checkpoint
      * we might use again later
     */
-    writeGraphToFile(graph, graphSize, "ce_constructor-checkpoint-graph.out");
+    char ckFileName[50];
+    sprintf(ckFileName, "ce_constructor-checkpoint-graph-%f.out", randomNum);
+    writeGraphToFile(graph, graphSize, ckFileName);
   }
   // Clean up
   FIFODeleteGraph(tabooList);
