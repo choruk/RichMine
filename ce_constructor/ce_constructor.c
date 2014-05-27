@@ -20,7 +20,7 @@ double getSeconds() {
 void printUsageAndExit()
 {
   fprintf(stderr, "Unexpected usage!\n");
-  fprintf(stderr, "usage: ./ce_constructor []");
+  fprintf(stderr, "usage: ./ce_constructor [number of proccesors] [initial graph size]");
   exit(-1);
 }
 
@@ -342,6 +342,8 @@ int main(int argc, char *argv[])
       fprintf(stdout, "Eureka!  Counter-example found!\n");
       fflush(stdout);
       PrintGraph(graph, graphSize);
+      // Separate file for the graphs that are actually counter-examples
+      writeGraphToFile(graph, graphSize, "ce_constructor-solution-graph.out");
       /*
       * make a new graph one size bigger
       */
