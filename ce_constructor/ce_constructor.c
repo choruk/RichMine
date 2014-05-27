@@ -327,7 +327,7 @@ int main(int argc, char *argv[])
    * simple approach to avoiding filename collisions, but keeping all
    * files associated with a single run recognizable
   */
-  double randomNum = random() % 1000000000;
+  int randomNum = random() % 100000000000;
   /*
   * while we do not have a publishable result
   */
