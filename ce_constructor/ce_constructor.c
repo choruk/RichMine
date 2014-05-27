@@ -352,7 +352,7 @@ int main(int argc, char *argv[])
        * Use a separate file for the graphs that are actually counter-examples
       */
       char ceFileName[50];
-      sprintf(ceFileName, "ce_constructor-solution-graph-%f.out", randomNum);
+      sprintf(ceFileName, "ce_constructor-solution-graph-%d.out", randomNum);
       writeGraphToFile(graph, graphSize, ceFileName);
       /*
        * make a new graph one size bigger
@@ -528,7 +528,7 @@ int main(int argc, char *argv[])
      * we might use again later
     */
     char ckFileName[50];
-    sprintf(ckFileName, "ce_constructor-checkpoint-graph-%f.out", randomNum);
+    sprintf(ckFileName, "ce_constructor-checkpoint-graph-%d.out", randomNum);
     writeGraphToFile(graph, graphSize, ckFileName);
   }
   // Clean up
