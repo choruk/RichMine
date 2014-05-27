@@ -220,6 +220,40 @@ void CreateGraph(int *graph, int graphSize)
   }
 }
 
+void writeGraphToFile(int *graph, int graphSize, char *filename)
+{
+  FILE *graphFile = fopen(filename, "w");
+	if (graphFile == NULL)
+  {
+		printf("Error opening output file.\n");
+		exit(-1);
+	}
+  int i;
+  int rowCount = 0;
+	for (i = 0; i < graphSize*graphSize; i++)
+  {
+    if (rowCount == graphSize)
+    {
+      fprintf(graphFile, "\n");
+      rowCount = 0;
+    }
+    if (rowCount == graphSize-1)
+    {
+      fprintf(graphFile, "%d", graph[i]);
+    }
+    else
+    {
+      fprintf(graphFile, "%d ", graph[i]);
+    }
+    rowCount++;
+ 	}
+  fclose(graphFile);
+#ifdef DEBUG_1
+  printf("Wrote graph to %s", filename);
+#endif
+}
+
+
 int main(int argc, char *argv[])
 {
   double executionStartTime = getSeconds();
@@ -409,7 +443,8 @@ int main(int argc, char *argv[])
           /*
           * is it better and the i,j,count not taboo?
           */
-          if ((edgeFlipResults[k].count < edgeFlipResults[k].bestCount) && !FIFOFindEdgeCount(tabooList, myI, myJ, edgeFlipResults[k].count))
+          if ((edgeFlipResults[k].count < edgeFlipResults[k].bestCount) &&
+              !FIFOFindEdgeCount(tabooList, myI, myJ, edgeFlipResults[k].count))
             //					!FIFOFindEdge(taboo_list,i,j))
           {
             edgeFlipResults[k].bestCount = edgeFlipResults[k].count;
@@ -469,11 +504,18 @@ int main(int argc, char *argv[])
     * rinse and repeat
     */
     double loopIterationEndTime = getSeconds();
-    fprintf(stdout, "That loop iteration took %f seconds.\nIn total, %f seconds have passed so far.\n",
+    fprintf(
+      stdout,
+      "That loop iteration took %f seconds.\nIn total, %f seconds have passed so far.\n",
       loopIterationEndTime-loopIterationStartTime,
       loopIterationEndTime-executionStartTime
     );
     fflush(stdout);
+    /*
+     * write the current graph to a file as well, as a checkpoint
+     * we might use again later
+    */
+    writeGraphToFile(graph, graphSize, "ce_constructor-checkpoint-graph.out");
   }
   // Clean up
   FIFODeleteGraph(tabooList);
