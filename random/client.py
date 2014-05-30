@@ -39,7 +39,7 @@ f.write(file_content)
 f.closed
 
 # Start c code
-subprocess.call(['./runMiner'])
+call(['./runMiner'])
 
 # Main loop
 while True:
