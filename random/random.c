@@ -180,11 +180,10 @@ int main(int argc,char *argv[])
     fprintf(stdout, "Opening system_best.txt - there is a better graph available\n");
 
     // Read the system_best.txt graph size
-    char buf[32];
+    char* buf = (char*) malloc(32);
 
     fgets(buf, sizeof buf, fp);
     graphSize = atoi(buf);
-    printf("%i\n", sizeof buf);
     printf("Size: %s\n", buf);
     printf("Size: %d\n", graphSize);
 
