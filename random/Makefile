@@ -15,7 +15,7 @@ PROGRAMS = random
 all: $(PROGRAMS)
 
 random: random.c $(INCL) ${BOBJ}
-	$(COMPILE) ${INCLUDES} -o random random.c $(BOBJ) $(LIBS)
+	$(COMPILE) ${INCLUDES} -o runMiner random.c $(BOBJ) $(LIBS)
 
 fifo.o: fifo.c fifo.h jrb.h jval.h dllist.h
 	$(COMPILE) ${INCLUDES} -c fifo.c
