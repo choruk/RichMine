@@ -170,6 +170,11 @@ int main(int argc,char *argv[])
       g[m] = rand() % 2;
     }
   */
+  // Set up graph buffer
+  g = (int *)malloc(graphSize*graphSize*sizeof(int));
+  if(g == NULL) {
+    exit(1);
+  }
 
   // Read in system_best.txt file
   FILE *fp;
