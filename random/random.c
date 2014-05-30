@@ -192,6 +192,7 @@ int main(int argc,char *argv[])
     // Read the system_best.txt clique count
     fscanf(fp, "%d", &gs);
     printf("Count: %d\n", gs);
+    count = gs;
     /*while(fgets(buf, sizeof buf, fp) != NULL) {
       memcpy(&count, buf, sizeof(count));
       }*/
