@@ -212,7 +212,7 @@ int main(int argc,char *argv[])
     // Verify
     printf("Size: %d\n", graphSize);
     printf("Count: %d\n", count);
-    PrintGraph(g,graphSize);
+    //PrintGraph(g,graphSize);
 	  
   }
 
