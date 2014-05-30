@@ -10,11 +10,11 @@ PRED=.
 BOBJ=$(COMMON)/jval.o $(COMMON)/jrb.o $(COMMON)/dllist.o $(COMMON)/fifo.o
 LIBS= -lm 
 
-PROGRAMS = random
+PROGRAMS = runMiner
 
 all: $(PROGRAMS)
 
-random: random.c $(INCL) ${BOBJ}
+runMiner: random.c $(INCL) ${BOBJ}
 	$(COMPILE) ${INCLUDES} -o runMiner random.c $(BOBJ) $(LIBS)
 
 fifo.o: fifo.c fifo.h jrb.h jval.h dllist.h
