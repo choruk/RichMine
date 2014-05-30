@@ -182,9 +182,9 @@ int main(int argc,char *argv[])
     // Read the system_best.txt graph size
     char* buf = (char*) malloc(256);
     int gs;
-    fscanf(fp, "%d", &gs);
-    printf("Size: %d\n", gs);
-    graphSize = gs;
+    fscanf(fp, "%s", buf);
+    printf("Size: %s\n", buf);
+    graphSize = 777;
     /*while(fgets(buf, sizeof buf, fp) != NULL) {
       memcpy(&graphSize, buf, sizeof(graphSize));
       }*/
