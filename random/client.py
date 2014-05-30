@@ -36,7 +36,7 @@ system_success = current_best_info['success']
 f = open('system_best.txt', 'w')
 file_content = system_size + '\n' + system_count + '\n' + system_graph
 f.write(file_content)
-f.closed
+f.close()
 
 # Start c code
 call(['./runMiner'])
@@ -87,4 +87,4 @@ while True:
         f = open('system_best.txt', 'w')
         file_content = system_size + '\n' + system_count + '\n' + system_graph
         f.write(file_content)
-        f.closed
+        f.close()
