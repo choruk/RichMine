@@ -198,7 +198,8 @@ int main(int argc,char *argv[])
     }
     char* gc = (char*) malloc(graphSize*graphSize*sizeof(char));
     fgets(gc, sizeof gc, fp);
-    for(int x = 0; x < graphSize*graphSize; x++) {
+    int x;
+    for(x = 0; x < graphSize*graphSize; x++) {
       g[x] = gc[x] - '0';
     }
     
