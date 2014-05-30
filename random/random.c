@@ -153,21 +153,57 @@ int main(int argc,char *argv[])
   /*
    * start with graph of size 99
    */
+  /*
   graphSize = 99;
   g = (int *)malloc(graphSize*graphSize*sizeof(int));
   if(g == NULL) {
     exit(1);
   }
-
+  */
   /*
    * randomize buffer
    */
+  /*
   size_t m = 0;
   for(m = 0; m < graphSize*graphSize; m++)
     {
       g[m] = rand() % 2;
     }
-	
+  */
+
+  // Read in system_best.txt file
+  FILE *fp;
+  fp = fopen("system_best.txt", "r");
+  if(fp == NULL) {
+    fprintf(stdout, "Can't open system_best.txt - we are up to date\n");
+  } else {
+    fprintf(stdout, "Opening system_best.txt - there is a better graph available\n");
+
+    // Read the system_best.txt graph size
+    while(fgets(g, sizeof g, fp) != NULL) {
+      graphSize = g;
+    }
+
+    // Read the system_best.txt clique count
+    while(fgets(g, sizeof g, fp) != NULL) {
+      count = g;
+    }
+
+    // Read the system_best.txt graph
+    while(fgets(g, sizeof g, fp) != NULL) {
+    }
+    
+    // Close the system_best.txt file
+    fclose(fp);
+
+    // Verify
+    printf("Size: %d\n", graphSize);
+    printf("Count: %d\n", count);
+    printf("Graph: %d\n", g);
+  }
+
+  exit(1);
+
   // initial allocation of graphs for each processor
   int **graphs = (int **)malloc(p * sizeof(int*));
   cilk_for(i = 0; i < p; i++)

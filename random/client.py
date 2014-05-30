@@ -2,10 +2,13 @@ import time
 import json
 import urllib
 import urllib2
+import logging
 from subprocess import call
 
 # Set up important variables
-url = 'http://ec2-54-86-64-225.compute-1.amazonaws.com:8080/'
+url = 'http://ec2-54-209-130-182.compute-1.amazonaws.com:8080/'
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Send initial request
 empty_file = {'size' : '-1'}
@@ -14,14 +17,14 @@ request = urllib2.Request(url, no_data)
 try:
     response = urllib2.urlopen(request)
 except urllib2.HTTPError, e:
-    checksLogger.error('HTTPError = ' + str(e.code))
+    logger.error('HTTPError = ' + str(e.code))
 except urllib2.URLError, e:
-    checksLogger.error('URLError = ' + str(e.reason))
+    logger.error('URLError = ' + str(e.reason))
 except httplib.HTTPException, e:
-    checksLogger.error('HTTPException')
+    logger.error('HTTPException')
 except Exception:
     import traceback
-    checksLogger.error('generic exception: ' + traceback.format_exc())
+    logger.error('generic exception: ' + traceback.format_exc())
 current_best_string = response.read()
 current_best_info = json.loads(current_best_string)
 system_size = current_best_info['size']
@@ -36,13 +39,13 @@ f.write(file_content)
 f.closed
 
 # Start c code
-#subprocess.call(['./runMiner'])
+subprocess.call(['./runMiner'])
 
 # Main loop
 while True:
 
     # Wait 30 minutes before checking again
-    #time.sleep(60*30)
+    time.sleep(60*30)
 
     # Open local file and send to master
     f = open('local_best.txt', 'r')
@@ -59,26 +62,29 @@ while True:
     try:
         response = urllib2.urlopen(request)
     except urllib2.HTTPError, e:
-        checksLogger.error('HTTPError = ' + str(e.code))
+        logger.error('HTTPError = ' + str(e.code))
     except urllib2.URLError, e:
-        checksLogger.error('URLError = ' + str(e.reason))
+        logger.error('URLError = ' + str(e.reason))
     except httplib.HTTPException, e:
-        checksLogger.error('HTTPException')
+        logger.error('HTTPException')
     except Exception:
         import traceback
-        checksLogger.error('generic exception: ' + traceback.format_exc())
+        logger.error('generic exception: ' + traceback.format_exc())
     current_best_string = response.read()
     current_best_info = json.loads(current_best_string)
-    system_size = current_best_info['size']
+    system_size = int(current_best_info['size'])
     system_success = current_best_info['success']
+    
+    print system_size
+    print system_success
 
     # If master graph is better than local, write that to file
     if system_size != -1 and system_success :
         system_count = current_best_info['count']
         system_graph = current_best_info['graph']
+        print system_count
+        print system_graph
         f = open('system_best.txt', 'w')
         file_content = system_size + '\n' + system_count + '\n' + system_graph
         f.write(file_content)
         f.closed
-
-    break
