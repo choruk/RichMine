@@ -184,10 +184,12 @@ int main(int argc,char *argv[])
 
     fgets(buf, sizeof buf, fp);
     graphSize = atoi(buf);
+    printf("Size: %d\n", graphSize);
 
     // Read the system_best.txt clique count
     fgets(buf, sizeof buf, fp);
     count = atoi(buf);
+    printf("Count: %d\n", count);
 
     // Read the system_best.txt graph
     g = (int *)malloc(graphSize*graphSize*sizeof(int));
@@ -197,12 +199,9 @@ int main(int argc,char *argv[])
     fgets((char*)g, sizeof g, fp);
     
     // Close the system_best.txt file and clean up
-    free(buf);
     fclose(fp);
 
     // Verify
-    printf("Size: %d\n", graphSize);
-    printf("Count: %d\n", count);
     PrintGraph(g,graphSize);
 	  
   }
