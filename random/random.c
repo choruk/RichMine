@@ -188,7 +188,8 @@ int main(int argc,char *argv[])
 
     // Read the system_best.txt clique count
     while(fgets(buf, sizeof buf, fp) != NULL) {
-      count = buf;
+      //count = buf;
+      memcpy(&count, buf, sizeof(count));
     }
 
     // Read the system_best.txt graph
@@ -199,13 +200,15 @@ int main(int argc,char *argv[])
     while(fgets((char*)g, sizeof g, fp) != NULL) {
     }
     
-    // Close the system_best.txt file
+    // Close the system_best.txt file and clean up
+    free(buf);
     fclose(fp);
 
     // Verify
     printf("Size: %d\n", graphSize);
     printf("Count: %d\n", count);
-    printf("Graph: %d\n", g);
+    PrintGraph(g,graphSize);
+	  
   }
 
   exit(1);
