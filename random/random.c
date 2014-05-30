@@ -203,7 +203,7 @@ int main(int argc,char *argv[])
     printf("%s\n", gc);
     for(x = 0; x < graphSize*graphSize; x++) {
       g[x] = gc[x] - '0';
-      printf("%c", g[x]);
+      printf("%d", g[x]);
     }
     
     // Close the system_best.txt file and clean up
