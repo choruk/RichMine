@@ -197,9 +197,7 @@ int main(int argc,char *argv[])
       exit(1);
     }
     char* gc = (char*) malloc(graphSize*graphSize*sizeof(char));
-    printf("g: %d\n", sizeof g);
-    printf("gc: %d\n", sizeof gc);
-    if(fgets(gc, sizeof gc, fp) == NULL)
+    if(fgets(gc, graphSize*graphSize+1, fp) == NULL)
       printf("ERROR\n");
     int x;
     for(x = 0; x < graphSize*graphSize; x++) {
