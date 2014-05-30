@@ -207,7 +207,7 @@ int main(int argc,char *argv[])
     fclose(fp);
 
     // Verify
-    //PrintGraph(g,graphSize);
+    PrintGraph(g,graphSize);
 	  
   }
 
