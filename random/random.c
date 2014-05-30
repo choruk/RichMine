@@ -184,11 +184,13 @@ int main(int argc,char *argv[])
 
     fgets(buf, sizeof buf, fp);
     graphSize = atoi(buf);
+    printf("Size: %s\n", buf);
     printf("Size: %d\n", graphSize);
 
     // Read the system_best.txt clique count
     fgets(buf, sizeof buf, fp);
     count = atoi(buf);
+    printf("Count: %s\n", buf);
     printf("Count: %d\n", count);
 
     // Read the system_best.txt graph
