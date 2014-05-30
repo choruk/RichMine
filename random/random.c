@@ -184,7 +184,7 @@ int main(int argc,char *argv[])
 
     fgets(buf, sizeof buf, fp);
     graphSize = atoi(buf);
-    printf("%d\n", sizeof(buf));
+    printf("%i\n", sizeof buf);
     printf("Size: %s\n", buf);
     printf("Size: %d\n", graphSize);
 
