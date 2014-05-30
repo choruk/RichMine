@@ -196,6 +196,8 @@ int main(int argc,char *argv[])
     if(g == NULL) {
       exit(1);
     }
+    printf("S1: %d\n", graphSize*graphSize);
+    printf("S2: %d\n", graphSize*graphSize*sizeof(char));
     char* gc = (char*) malloc(graphSize*graphSize*sizeof(char));
     fgets(gc, sizeof gc, fp);
     int x;
