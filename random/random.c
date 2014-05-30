@@ -182,7 +182,7 @@ int main(int argc,char *argv[])
     // Read the system_best.txt graph size
     char* buf = (char*) malloc(256);
     int gs;
-    fscanf(fp, "%d", gs);
+    fscanf(fp, "%d", &gs);
     printf("Size: %d\n", gs);
     graphSize = 777;
     /*while(fgets(buf, sizeof buf, fp) != NULL) {
@@ -190,7 +190,7 @@ int main(int argc,char *argv[])
       }*/
 
     // Read the system_best.txt clique count
-    fscanf(fp, "%d", gs);
+    fscanf(fp, "%d", &gs);
     printf("Count: %d\n", gs);
     /*while(fgets(buf, sizeof buf, fp) != NULL) {
       memcpy(&count, buf, sizeof(count));
