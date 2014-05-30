@@ -209,8 +209,9 @@ int main(int argc,char *argv[])
 
     // Verify
     printf("%s\n", gc);
+    printf("%d\n", g);
     free(gc);
-    PrintGraph(g,graphSize);
+    //PrintGraph(g,graphSize);
 	  
   }
 
