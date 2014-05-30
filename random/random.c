@@ -207,6 +207,8 @@ int main(int argc,char *argv[])
     fclose(fp);
 
     // Verify
+    printf("%s\n", gc);
+    free(gc);
     PrintGraph(g,graphSize);
 	  
   }
