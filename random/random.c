@@ -180,30 +180,21 @@ int main(int argc,char *argv[])
     fprintf(stdout, "Opening system_best.txt - there is a better graph available\n");
 
     // Read the system_best.txt graph size
-    char* buf = (char*) malloc(256);
-    int gs;
-    fscanf(fp, "%d", &gs);
-    printf("Size: %d\n", gs);
-    graphSize = 777;
-    /*while(fgets(buf, sizeof buf, fp) != NULL) {
-      memcpy(&graphSize, buf, sizeof(graphSize));
-      }*/
+    char buf[32];
+
+    fgets(buf, sizeof buf, fp);
+    graphSize = atoi(buf);
 
     // Read the system_best.txt clique count
-    fscanf(fp, "%d", &gs);
-    printf("Count: %d\n", gs);
-    count = gs;
-    /*while(fgets(buf, sizeof buf, fp) != NULL) {
-      memcpy(&count, buf, sizeof(count));
-      }*/
+    fgets(buf, sizeof buf, fp);
+    count = atoi(buf);
 
     // Read the system_best.txt graph
     g = (int *)malloc(graphSize*graphSize*sizeof(int));
     if(g == NULL) {
       exit(1);
     }
-    while(fgets((char*)g, sizeof g, fp) != NULL) {
-    }
+    fgets((char*)g, sizeof g, fp);
     
     // Close the system_best.txt file and clean up
     free(buf);
@@ -212,7 +203,7 @@ int main(int argc,char *argv[])
     // Verify
     printf("Size: %d\n", graphSize);
     printf("Count: %d\n", count);
-    //PrintGraph(g,graphSize);
+    PrintGraph(g,graphSize);
 	  
   }
 
