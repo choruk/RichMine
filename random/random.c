@@ -184,6 +184,7 @@ int main(int argc,char *argv[])
     int gs;
     fscanf(fp, "%d", &gs);
     printf("Size: %d\n", gs);
+    graphSize = gs;
     /*while(fgets(buf, sizeof buf, fp) != NULL) {
       memcpy(&graphSize, buf, sizeof(graphSize));
       }*/
