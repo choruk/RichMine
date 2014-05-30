@@ -20,7 +20,7 @@ double getSeconds() {
 void printUsageAndExit()
 {
   fprintf(stderr, "Unexpected usage!\n");
-  fprintf(stderr, "usage: ./ce_constructor []");
+  fprintf(stderr, "usage: ./ce_constructor [number of proccesors] [initial graph size]");
   exit(-1);
 }
 
@@ -220,18 +220,52 @@ void CreateGraph(int *graph, int graphSize)
   }
 }
 
+void writeGraphToFile(int *graph, int graphSize, char *filename)
+{
+  FILE *graphFile = fopen(filename, "w");
+	if (graphFile == NULL)
+  {
+		printf("Error opening output file.\n");
+		exit(-1);
+	}
+  int i;
+  int rowCount = 0;
+	for (i = 0; i < graphSize*graphSize; i++)
+  {
+    if (rowCount == graphSize)
+    {
+      fprintf(graphFile, "\n");
+      rowCount = 0;
+    }
+    if (rowCount == graphSize-1)
+    {
+      fprintf(graphFile, "%d", graph[i]);
+    }
+    else
+    {
+      fprintf(graphFile, "%d ", graph[i]);
+    }
+    rowCount++;
+ 	}
+  fclose(graphFile);
+#ifdef DEBUG_1
+  printf("Wrote graph to %s", filename);
+#endif
+}
+
+
 int main(int argc, char *argv[])
 {
   double executionStartTime = getSeconds();
   char *numProc = "4";
-  int initalGraphSize = INITIAL_GRAPH_SIZE;
+  int initialGraphSize = INITIAL_GRAPH_SIZE;
   if (argc > 1)
   {
     numProc = argv[1];
   }
   if (argc > 2)
   {
-    initalGraphSize = atoi(argv[2]);
+    initialGraphSize = atoi(argv[2]);
   }
   __cilkrts_set_param("nworkers", numProc);
   fprintf(stdout, "# of workers: %d\n", __cilkrts_get_nworkers());
@@ -247,7 +281,7 @@ int main(int argc, char *argv[])
   /*
   * start with graph of size INITIAL_GRAPH_SIZE
   */
-  int graphSize = INITIAL_GRAPH_SIZE;
+  int graphSize = initialGraphSize;
   int *graph = (int *)malloc(graphSize*graphSize*sizeof(int));
   if (graph == NULL) {
     exit(1);
@@ -289,6 +323,12 @@ int main(int argc, char *argv[])
     exit(1);
   }
   /*
+   * we will use this large random number to append to filenames as a
+   * simple approach to avoiding filename collisions, but keeping all
+   * files associated with a single run recognizable
+  */
+  int randomNum = random() % 100000000000;
+  /*
   * while we do not have a publishable result
   */
   fprintf(stdout, "Initialization took %f seconds.\n", getSeconds() - executionStartTime);
@@ -308,8 +348,14 @@ int main(int argc, char *argv[])
       fprintf(stdout, "Eureka!  Counter-example found!\n");
       fflush(stdout);
       PrintGraph(graph, graphSize);
+      /* 
+       * Use a separate file for the graphs that are actually counter-examples
+      */
+      char ceFileName[50];
+      sprintf(ceFileName, "ce_constructor-solution-graph-%d.out", randomNum);
+      writeGraphToFile(graph, graphSize, ceFileName);
       /*
-      * make a new graph one size bigger
+       * make a new graph one size bigger
       */
       newGraph = (int *)malloc((graphSize+1) * (graphSize+1) * sizeof(int));
       if (newGraph == NULL)
@@ -409,7 +455,8 @@ int main(int argc, char *argv[])
           /*
           * is it better and the i,j,count not taboo?
           */
-          if ((edgeFlipResults[k].count < edgeFlipResults[k].bestCount) && !FIFOFindEdgeCount(tabooList, myI, myJ, edgeFlipResults[k].count))
+          if ((edgeFlipResults[k].count < edgeFlipResults[k].bestCount) &&
+              !FIFOFindEdgeCount(tabooList, myI, myJ, edgeFlipResults[k].count))
             //					!FIFOFindEdge(taboo_list,i,j))
           {
             edgeFlipResults[k].bestCount = edgeFlipResults[k].count;
@@ -469,11 +516,20 @@ int main(int argc, char *argv[])
     * rinse and repeat
     */
     double loopIterationEndTime = getSeconds();
-    fprintf(stdout, "That loop iteration took %f seconds.\nIn total, %f seconds have passed so far.\n",
+    fprintf(
+      stdout,
+      "That loop iteration took %f seconds.\nIn total, %f seconds have passed so far.\n",
       loopIterationEndTime-loopIterationStartTime,
       loopIterationEndTime-executionStartTime
     );
     fflush(stdout);
+    /*
+     * write the current graph to a file as well, as a checkpoint
+     * we might use again later
+    */
+    char ckFileName[50];
+    sprintf(ckFileName, "ce_constructor-checkpoint-graph-%d.out", randomNum);
+    writeGraphToFile(graph, graphSize, ckFileName);
   }
   // Clean up
   FIFODeleteGraph(tabooList);
