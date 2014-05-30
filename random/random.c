@@ -200,16 +200,16 @@ int main(int argc,char *argv[])
     if(fgets(gc, graphSize*graphSize+1, fp) == NULL)
       printf("ERROR\n");
     int x;
+    printf("%s\n", gc);
     for(x = 0; x < graphSize*graphSize; x++) {
       g[x] = gc[x] - '0';
+      printf("%c", g[x]);
     }
     
     // Close the system_best.txt file and clean up
     fclose(fp);
 
     // Verify
-    printf("%s\n", gc);
-    printf("%d\n", g);
     free(gc);
     //PrintGraph(g,graphSize);
 	  
