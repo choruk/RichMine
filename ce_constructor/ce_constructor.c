@@ -6,7 +6,9 @@
 #include "fifo.h"
 #include "ce_constructor.h"
 
-#define INITIAL_GRAPH_SIZE 8
+#define DEBUG_2
+
+#define INITIAL_GRAPH_SIZE 99
 #define SYMMETRIC_RAMSEY_NUMBER 6
 #define TABOO_SIZE 500
 #define BIG_COUNT 9999999
@@ -219,8 +221,65 @@ void CreateGraph(int *graph, int graphSize)
     }
   }
 }
+/*
+ * graph must already be allocated to have the right size
+ * for the string represented by graphString
+*/
+void loadGraphFromString(int *graph, int graphSize, char *graphString)
+{
+  char *i;
+  int j = 0;
+  for (i=graphString; *i; i++)
+  {
+    if (j >= graphSize && *i == '\n')
+    {
+      printf(
+        "Fatal error: attempting to load a graph from string that has too many characters. Last char=%c, Graph size=%d, Strlen=%zd\n",
+        *i,
+        graphSize,
+        strlen(graphString)
+      );
+      exit(-1);
+    }
+    if (*i == '0')
+    {
+      graph[j] = 0;
+    }
+    else if (*i == '1')
+    {
+      graph[j] = 1;
+    }
+    j++;
+  }
+}
 
-void writeGraphToFile(int *graph, int graphSize, char *filename)
+void convertGraphToString(int *graph, int graphSize, char *graphString)
+{
+  int i;
+  for (i = 0; i < graphSize*graphSize; i++)
+  {
+    char graphEdge[2];
+    if (graph[i] == 0)
+    {
+      char color = '0';
+      graphEdge[0] = color;
+    }
+    else if (graph[i] == 1)
+    {
+      char color = '1';
+      graphEdge[0] = color;
+    }
+    char terminator = '\0';
+    graphEdge[1] = terminator;
+    strcat(graphString, graphEdge);
+  }
+#ifdef DEBUG_2
+  fprintf(stdout, "Converted graph to string: %s\n", graphString);
+  fflush(stdout);
+#endif
+}
+
+void writeGraphToFile(int *graph, int graphSize, int cliqueCount, char *filename)
 {
   FILE *graphFile = fopen(filename, "w");
 	if (graphFile == NULL)
@@ -228,36 +287,86 @@ void writeGraphToFile(int *graph, int graphSize, char *filename)
 		printf("Error opening output file.\n");
 		exit(-1);
 	}
-  int i;
-  int rowCount = 0;
-	for (i = 0; i < graphSize*graphSize; i++)
-  {
-    if (rowCount == graphSize)
-    {
-      fprintf(graphFile, "\n");
-      rowCount = 0;
-    }
-    if (rowCount == graphSize-1)
-    {
-      fprintf(graphFile, "%d", graph[i]);
-    }
-    else
-    {
-      fprintf(graphFile, "%d ", graph[i]);
-    }
-    rowCount++;
- 	}
+  char graphString[graphSize*graphSize+1];
+  convertGraphToString(graph, graphSize, graphString);
+  fprintf(graphFile, "%d\n%d\n%s", graphSize, cliqueCount, graphString);
   fclose(graphFile);
 #ifdef DEBUG_1
   printf("Wrote graph to %s", filename);
 #endif
 }
 
+int loadGraphFromFile(int *graph, int allocatedGraphSize, int *cliqueCount, char *filename)
+{
+  FILE *graphFile = fopen(filename, "r");
+	if (graphFile == NULL)
+  {
+		printf("Error opening graph file: %s.\n", filename);
+		exit(-1);
+	}
+  char * line = NULL;
+  size_t len = 0;
+  ssize_t read;
+  int i = 0;
+  int graphSize;
+  char *graphString;
+#ifdef DEBUG_2
+  fprintf(stdout, "Reading graph from file: %s\n", filename);
+  fflush(stdout);
+#endif
+  while ((read = getline(&line, &len, graphFile)) != -1)
+  {
+#ifdef DEBUG_2
+    fprintf(stdout, "%s\n", line);
+    fflush(stdout);
+#endif
+    if (i == 0)
+    {
+      // size
+      graphSize = atoi(line);
+      if (allocatedGraphSize != graphSize)
+      {
+        // Need to reallocate
+        free(graph);
+        graph = (int *)malloc(graphSize*graphSize*sizeof(int));
+      }
+    }
+    else if (i == 1)
+    {
+      // count
+      *cliqueCount = atoi(line);
+    }
+    else if (i == 2)
+    {
+      // graph string
+      graphString = line;
+      loadGraphFromString(graph, graphSize, graphString);
+    }
+    else
+    {
+#ifdef DEBUG_2
+      fprintf(stdout, "Found unexpected line: %s\n", line);
+      fflush(stdout);
+#endif
+    }
+    i++;
+  }
+  fclose(graphFile);
+  return graphSize;
+}
+
+int fileExists(char *filename)
+{
+  FILE *graphFile = fopen(filename, "r");
+	return graphFile != NULL;
+}
 
 int main(int argc, char *argv[])
 {
   double executionStartTime = getSeconds();
-  char *numProc = "4";
+  // Parse any command line parameters
+  // default to 16 processors
+  char *numProc = "16";
   int initialGraphSize = INITIAL_GRAPH_SIZE;
   if (argc > 1)
   {
@@ -270,6 +379,10 @@ int main(int argc, char *argv[])
   __cilkrts_set_param("nworkers", numProc);
   fprintf(stdout, "# of workers: %d\n", __cilkrts_get_nworkers());
   fflush(stdout);
+  // Hard-code the name of the file from the server
+  char *graphFileFromServer = "system_best.txt";
+  char *localGraphFile = "local_best.txt";
+  // Initialize other vars
   int p = atoi(numProc);
   int count, bestCount;
   int i, j, bestI, bestJ;
@@ -286,8 +399,27 @@ int main(int argc, char *argv[])
   if (graph == NULL) {
     exit(1);
   }
-  // And evenly randomize the edge colorings
-  CreateGraph(graph, graphSize);
+  /*
+   * We either need to start from the graph that the server
+   * sends back, else we create our own random graph.
+  */
+  if (fileExists(graphFileFromServer))
+  {
+    graphSize = loadGraphFromFile(graph, graphSize, &count, graphFileFromServer);
+    fprintf(
+      stdout,
+      "Just loaded graph from file with size: %d and clique count: %d\n",
+      graphSize,
+      count
+    );
+    fflush(stdout);
+    remove(graphFileFromServer);
+  }
+  else
+  {
+    // Evenly randomize the edge colorings
+    CreateGraph(graph, graphSize);
+  }
   // Need a copy of graph for each processor
   int **graphs = (int **)malloc(p * sizeof(int*));
   cilk_for (i = 0; i < p; i++)
@@ -349,11 +481,13 @@ int main(int argc, char *argv[])
       fflush(stdout);
       PrintGraph(graph, graphSize);
       /* 
-       * Use a separate file for the graphs that are actually counter-examples
+       * Use a separate file for the graphs that are actually counter-examples,
+       * but also write them to the local_best file.
       */
       char ceFileName[50];
       sprintf(ceFileName, "ce_constructor-solution-graph-%d.out", randomNum);
-      writeGraphToFile(graph, graphSize, ceFileName);
+      writeGraphToFile(graph, graphSize, 0, ceFileName);
+      writeGraphToFile(graph, graphSize, 0, localGraphFile);
       /*
        * make a new graph one size bigger
       */
@@ -527,9 +661,22 @@ int main(int argc, char *argv[])
      * write the current graph to a file as well, as a checkpoint
      * we might use again later
     */
-    char ckFileName[50];
-    sprintf(ckFileName, "ce_constructor-checkpoint-graph-%d.out", randomNum);
-    writeGraphToFile(graph, graphSize, ckFileName);
+    // char ckFileName[50];
+    // sprintf(ckFileName, "ce_constructor-checkpoint-graph-%d.out", randomNum);
+    // writeGraphToFile(graph, graphSize, ckFileName);
+    writeGraphToFile(graph, graphSize, count, localGraphFile);
+    if (fileExists(graphFileFromServer))
+    {
+      graphSize = loadGraphFromFile(graph, graphSize, &count, graphFileFromServer);
+      fprintf(
+        stdout,
+        "Found new system best data with size: %d and clique count: %d\n",
+        graphSize,
+        count
+      );
+      fflush(stdout);
+      remove(graphFileFromServer);
+    }
   }
   // Clean up
   FIFODeleteGraph(tabooList);
