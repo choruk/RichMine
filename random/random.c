@@ -406,11 +406,11 @@ int main(int argc,char *argv[])
       // Write current solution to file
       ofp = fopen("local_best.txt", "w");
       //fwrite((void*)&graphSize, sizeof(int), 1, ofp);
-      fprintf(ofp, "%d", graphSize);
+      fprintf(ofp, "%d\n", graphSize);
       //fwrite((void*)&count, sizeof(int), 1, ofp);
-      fprintf(ofp, "%d", count);
+      fprintf(ofp, "%d\n", count);
       //fwrite(g, sizeof(int), graphSize*graphSize, ofp);
-      char gs[graphSize*graphSize];
+      char gs[graphSize*graphSize+1];
       convertGraphToString(g, graphSize, gs);
       fprintf(ofp, "%s", gs);
       fclose(ofp);
