@@ -131,6 +131,28 @@ double getSeconds() {
   return (double) (tp.tv_sec + ((1e-6)*tp.tv_usec));
 }
 
+void convertGraphToString(int *graph, int graphSize, char *graphString)
+{
+  int i;
+  for (i = 0; i < graphSize*graphSize; i++)
+    {
+      char graphEdge[2];
+      if (graph[i] == 0)
+	{
+	  char color = '0';
+	  graphEdge[0] = color;
+	}
+      else if (graph[i] == 1)
+	{
+	  char color = '1';
+	  graphEdge[0] = color;
+	}
+      char terminator = '\0';
+      graphEdge[1] = terminator;
+      strcat(graphString, graphEdge);
+    }
+}
+
 int main(int argc,char *argv[])
 {
   int *g;
@@ -228,28 +250,6 @@ int main(int argc,char *argv[])
   tabooList = FIFOInitEdge(TABOOSIZE);
   if(tabooList == NULL) {
     exit(1);
-  }
-
-  void convertGraphToString(int *graph, int graphSize, char *graphString)
-  {
-    int i;
-    for (i = 0; i < graphSize*graphSize; i++)
-      {
-	char graphEdge[2];
-	if (graph[i] == 0)
-	  {
-	    char color = '0';
-	    graphEdge[0] = color;
-	  }
-	else if (graph[i] == 1)
-	  {
-	    char color = '1';
-	    graphEdge[0] = color;
-	  }
-	char terminator = '\0';
-	graphEdge[1] = terminator;
-	strcat(graphString, graphEdge);
-      }
   }
 	
   /*
