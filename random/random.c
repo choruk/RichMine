@@ -12,6 +12,8 @@
 #define TABOOSIZE (500)
 #define BIGCOUNT (9999999)
 
+#define DEBUG_2
+
 /***
  *** example of very simple search for R(6,6) counter examples
  ***
@@ -213,6 +215,9 @@ int main(int argc,char *argv[])
       printf("Error: system_best.txt could not be removed\n");
   }
 
+  // Variables to be used later
+  char gs[graphSize*graphSize+1];
+
   // initial allocation of graphs for each processor
   int **graphs = (int **)malloc(p * sizeof(int*));
   cilk_for(i = 0; i < p; i++)
@@ -257,9 +262,6 @@ int main(int argc,char *argv[])
    */
   while(1)
     {
-      // Variables to be used later
-      char gs[graphSize*graphSize+1];
-
       // Read in system_best.txt file
       ifp = fopen("system_best.txt", "r");
       if(ifp == NULL) {
@@ -277,10 +279,6 @@ int main(int argc,char *argv[])
 	count = atoi(buf);
 	
 	// Read the system_best.txt graph
-	g = (int *)malloc(graphSize*graphSize*sizeof(int));
-	if(g == NULL) {
-	  exit(1);
-	}
 	char* gc = (char*) malloc(graphSize*graphSize*sizeof(char));
 	if(fgets(gc, graphSize*graphSize+1, ifp) == NULL)
 	  printf("ERROR\n");
@@ -308,11 +306,7 @@ int main(int argc,char *argv[])
 	  printf("Eureka!  Counter-example found!\n");
 	  fflush(stdout);
 	  PrintGraph(g,graphSize);
-
-	  /*
-	   * keep going
-	   */
-	  continue;
+	  break;
 	}
 
       /*
@@ -417,7 +411,7 @@ int main(int argc,char *argv[])
       printf("Writing graph\n");
       printf("%d\n", graphSize);
       printf("%d\n", count);
-      PrintGraph(g,graphSize);
+      //PrintGraph(g,graphSize);
       fprintf(ofp, "%s", gs);
       printf("Closing file\n");
       fclose(ofp);
