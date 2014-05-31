@@ -153,6 +153,10 @@ void convertGraphToString(int *graph, int graphSize, char *graphString)
       graphEdge[1] = terminator;
       strcat(graphString, graphEdge);
     }
+#ifdef DEBUG_2
+  fprintf(stdout, "Converted graph to string: %s\n", graphString);
+  fflush(stdout);
+#endif
 }
 
 int main(int argc,char *argv[])
