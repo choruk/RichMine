@@ -404,6 +404,7 @@ int main(int argc,char *argv[])
       count = CliqueCount(g,graphSize);
 
       // Write current solution to file
+      printf("Begin File IO\n");
       ofp = fopen("local_best.txt", "w");
       //fwrite((void*)&graphSize, sizeof(int), 1, ofp);
       fprintf(ofp, "%d\n", graphSize);
@@ -414,6 +415,7 @@ int main(int argc,char *argv[])
       convertGraphToString(g, graphSize, gs);
       fprintf(ofp, "%s", gs);
       fclose(ofp);
+      printf("End File IO\n");
 
       // Calculate timing
       currentTime = getSeconds();
