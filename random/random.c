@@ -12,8 +12,6 @@
 #define TABOOSIZE (500)
 #define BIGCOUNT (9999999)
 
-//#define DEBUG_2
-
 /***
  *** example of very simple search for R(6,6) counter examples
  ***
