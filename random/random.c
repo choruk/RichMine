@@ -381,6 +381,13 @@ int main(int argc,char *argv[])
        */
       count = CliqueCount(g,graphSize);
 
+      // Write current solution to file
+      ofp = fopen("local_best.txt", "w");
+      fwrite((void*)&graphSize, sizeof(int), 1, ofp);
+      fwrite((void*)&count, sizeof(int), 1, ofp);
+      fwrite(g, sizeof(int), graphSize*graphSize, ofp);
+      fclose(ofp);
+
       // Calculate timing
       currentTime = getSeconds();
       elapsed = currentTime - startTime;
@@ -398,13 +405,6 @@ int main(int argc,char *argv[])
 	     bestJ,
 	     g[bestI*graphSize+bestJ]);
       fflush(stdout);
-
-      // Write current solution to file
-      ofp = fopen("local_best.txt", "w");
-      fwrite((void*)graphSize, sizeof(int), 1, ofp);
-      fwrite((void*)count, sizeof(int), 1, ofp);
-      fwrite(g, sizeof(int), graphSize*graphSize, ofp);
-      fclose(ofp);
 
       /*
        * rinse and repeat
