@@ -394,28 +394,17 @@ int main(int argc,char *argv[])
       FIFOInsertEdgeCount(tabooList,bestI,bestJ,count);
 
       // Write current solution to file
-      //printf("Begin File IO\n");
       ofp = fopen("local_best.txt", "w");
       if(ofp == NULL)
 	printf("Error: could not open local_best.txt, terminating\n");
-      //printf("Writing size\n");
       fprintf(ofp, "%d\n", graphSize);
       fflush(ofp);
-      //printf("Writing count\n");
       fprintf(ofp, "%d\n", count);
       fflush(ofp);
-      //printf("%d\n", graphSize);
-      //printf("%d\n", count);
       convertGraphToString(g, graphSize, gs);
-      //printf("Writing graph\n");
-      //printf("%d\n", graphSize);
-      //printf("%d\n", count);
-      //PrintGraph(g,graphSize);
       fprintf(ofp, "%s", gs);
       fflush(ofp);
-      //printf("Closing file\n");
       fclose(ofp);
-      //printf("End File IO\n");
 
       // Calculate timing
       currentTime = getSeconds();
