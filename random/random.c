@@ -257,6 +257,9 @@ int main(int argc,char *argv[])
    */
   while(1)
     {
+      // Variables to be used later
+      char gs[graphSize*graphSize+1];
+
       // Read in system_best.txt file
       ifp = fopen("system_best.txt", "r");
       if(ifp == NULL) {
@@ -405,15 +408,12 @@ int main(int argc,char *argv[])
 
       // Write current solution to file
       printf("Begin File IO\n");
+      remove("local_best.txt");
       ofp = fopen("local_best.txt", "w");
-      //fwrite((void*)&graphSize, sizeof(int), 1, ofp);
       printf("Writing size\n");
       fprintf(ofp, "%d\n", graphSize);
-      //fwrite((void*)&count, sizeof(int), 1, ofp);
       printf("Writing count\n");
       fprintf(ofp, "%d\n", count);
-      //fwrite(g, sizeof(int), graphSize*graphSize, ofp);
-      char gs[graphSize*graphSize+1];
       convertGraphToString(g, graphSize, gs);
       printf("Writing graph\n");
       fprintf(ofp, "%s", gs);
