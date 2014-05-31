@@ -399,14 +399,11 @@ int main(int argc,char *argv[])
       //FIFOInsertEdge(tabooList,best_i,best_j);
       FIFOInsertEdgeCount(tabooList,bestI,bestJ,count);
 
-      /*
-       * find out how we are doing
-       */
-      count = CliqueCount(g,graphSize);
-
       // Write current solution to file
       printf("Begin File IO\n");
       ofp = fopen("local_best.txt", "w");
+      if(ofp == NULL)
+	printf("Error: could not open local_best.txt, terminating\n");
       printf("Writing size\n");
       fprintf(ofp, "%d\n", graphSize);
       printf("Writing count\n");
@@ -418,7 +415,8 @@ int main(int argc,char *argv[])
       //PrintGraph(g,graphSize);
       fprintf(ofp, "%s", gs);
       printf("Closing file\n");
-      fclose(ofp);
+      int z = fclose(ofp);
+      printf("Close status: %d\n", z);
       printf("End File IO\n");
 
       // Calculate timing
