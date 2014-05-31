@@ -415,6 +415,8 @@ int main(int argc,char *argv[])
       fprintf(ofp, "%d\n", count);
       convertGraphToString(g, graphSize, gs);
       printf("Writing graph\n");
+      printf("%d\n", graphSize);
+      printf("%d\n", count);
       PrintGraph(g,graphSize);
       fprintf(ofp, "%s", gs);
       printf("Closing file\n");
