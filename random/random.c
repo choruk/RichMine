@@ -141,6 +141,8 @@ int main(int argc,char *argv[])
   int bestCount;
   int bestI, bestJ;
   void *tabooList;
+  FILE *ifp;
+  FILE *ofp;
 
   double startTime = getSeconds();
   double currentTime;
@@ -150,46 +152,22 @@ int main(int argc,char *argv[])
   __cilkrts_set_param("nworkers", numProc);
   int p = atoi(numProc);
 
-  /*
-   * start with graph of size 99
-   */
-  /*
-  graphSize = 99;
-  g = (int *)malloc(graphSize*graphSize*sizeof(int));
-  if(g == NULL) {
-    exit(1);
-  }
-  */
-  /*
-   * randomize buffer
-   */
-  /*
-  size_t m = 0;
-  for(m = 0; m < graphSize*graphSize; m++)
-    {
-      g[m] = rand() % 2;
-    }
-  */
-
   // Read in system_best.txt file
-  FILE *fp;
-  fp = fopen("system_best.txt", "r");
-  if(fp == NULL) {
-    fprintf(stdout, "Can't open system_best.txt - we are up to date\n");
+  ifp = fopen("system_best.txt", "r");
+  if(ifp == NULL) {
+    fprintf(stdout, "Error: Can't open system_best.txt\n");
+    exit(1);
   } else {
     fprintf(stdout, "Opening system_best.txt - there is a better graph available\n");
 
     // Read the system_best.txt graph size
     char buf[32];
-
-    fgets(buf, sizeof buf, fp);
+    fgets(buf, sizeof buf, ifp);
     graphSize = atoi(buf);
-    printf("Size: %d\n", graphSize);
 
     // Read the system_best.txt clique count
-    fgets(buf, sizeof buf, fp);
+    fgets(buf, sizeof buf, ifp);
     count = atoi(buf);
-    printf("Count: %d\n", count);
 
     // Read the system_best.txt graph
     g = (int *)malloc(graphSize*graphSize*sizeof(int));
@@ -197,25 +175,21 @@ int main(int argc,char *argv[])
       exit(1);
     }
     char* gc = (char*) malloc(graphSize*graphSize*sizeof(char));
-    if(fgets(gc, graphSize*graphSize+1, fp) == NULL)
+    if(fgets(gc, graphSize*graphSize+1, ifp) == NULL)
       printf("ERROR\n");
     int x;
-    printf("%s\n", gc);
     for(x = 0; x < graphSize*graphSize; x++) {
       g[x] = gc[x] - '0';
-      printf("%d", g[x]);
     }
     
     // Close the system_best.txt file and clean up
-    fclose(fp);
-
-    // Verify
+    fclose(ifp);
     free(gc);
-    //PrintGraph(g,graphSize);
-	  
-  }
 
-  exit(1);
+    // Delete file
+    if(remove("system_best.txt") != 0)
+      printf("Error: system_best.txt could not be removed\n");
+  }
 
   // initial allocation of graphs for each processor
   int **graphs = (int **)malloc(p * sizeof(int*));
@@ -259,12 +233,47 @@ int main(int argc,char *argv[])
   /*
    * while we do not have a publishable result
    */
-  while(graphSize < 102)
+  while(true)
     {
-      /*
-       * find out how we are doing
-       */
-      count = CliqueCount(g,graphSize);
+      // Read in system_best.txt file
+      ifp = fopen("system_best.txt", "r");
+      if(ifp == NULL) {
+	fprintf(stdout, "Can't open system_best.txt - we are up to date\n");
+      } else {
+	fprintf(stdout, "Opening system_best.txt - there is a better graph available\n");
+	
+	// Read the system_best.txt graph size
+	char buf[32];
+	fgets(buf, sizeof buf, ifp);
+	graphSize = atoi(buf);
+	
+	// Read the system_best.txt clique count
+	fgets(buf, sizeof buf, ifp);
+	count = atoi(buf);
+	
+	// Read the system_best.txt graph
+	g = (int *)malloc(graphSize*graphSize*sizeof(int));
+	if(g == NULL) {
+	  exit(1);
+	}
+	char* gc = (char*) malloc(graphSize*graphSize*sizeof(char));
+	if(fgets(gc, graphSize*graphSize+1, ifp) == NULL)
+	  printf("ERROR\n");
+	int x;
+	for(x = 0; x < graphSize*graphSize; x++) {
+	  g[x] = gc[x] - '0';
+	}
+	
+	// Close the system_best.txt file and clean up
+	fclose(ifp);
+	
+	// Verify
+	free(gc);
+
+	// Delete file
+	if(remove("system_best.txt") != 0)
+	  printf("Error: system_best.txt could not be removed\n");
+      }
 
       /*
        * if we have a counter example
@@ -361,13 +370,18 @@ int main(int argc,char *argv[])
 	}
 		
       /*
-       * taboo this graph configuration so that we don't visit
-       * it again
+       * taboo this graph configuration so that we don't visit it again
        */
       count = CliqueCount(g,graphSize);
       //FIFOInsertEdge(tabooList,best_i,best_j);
       FIFOInsertEdgeCount(tabooList,bestI,bestJ,count);
 
+      /*
+       * find out how we are doing
+       */
+      count = CliqueCount(g,graphSize);
+
+      // Calculate timing
       currentTime = getSeconds();
       elapsed = currentTime - startTime;
       sElapsed = elapsed % 60;
@@ -384,6 +398,13 @@ int main(int argc,char *argv[])
 	     bestJ,
 	     g[bestI*graphSize+bestJ]);
       fflush(stdout);
+
+      // Write current solution to file
+      ofp = fopen("local_best.txt", "w");
+      fwrite(graphSize, sizeof(int), 1, ofp);
+      fwrite(count, sizeof(int), 1, ofp);
+      fwrite(g, sizeof(int), graphSize*graphSize, ofp);
+      fclose(ofp);
 
       /*
        * rinse and repeat
