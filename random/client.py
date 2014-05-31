@@ -3,7 +3,7 @@ import json
 import urllib
 import urllib2
 import logging
-from subprocess import call
+from subprocess import Popen
 
 # Set up important variables
 url = 'http://ec2-54-209-130-182.compute-1.amazonaws.com:8080/'
@@ -39,12 +39,14 @@ f.write(file_content)
 f.close()
 
 # Start c code
-call(['./runMiner'])
+print "Starting mining client..."
+Popen(["./runMiner"])
 
 # Main loop
 while True:
 
     # Wait 30 minutes before checking again
+    print "Sleeping for 30 minutes..."
     time.sleep(60*30)
 
     # Open local file and send to master
@@ -74,17 +76,15 @@ while True:
     current_best_info = json.loads(current_best_string)
     system_size = int(current_best_info['size'])
     system_success = current_best_info['success']
-    
-    print system_size
-    print system_success
 
     # If master graph is better than local, write that to file
     if system_size != -1 and system_success :
+        print "Loading better solution from master..."
         system_count = current_best_info['count']
         system_graph = current_best_info['graph']
-        print system_count
-        print system_graph
         f = open('system_best.txt', 'w')
         file_content = system_size + '\n' + system_count + '\n' + system_graph
         f.write(file_content)
         f.close()
+    else :
+        print "Local solution is better than master..."
