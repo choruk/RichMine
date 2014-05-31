@@ -138,21 +138,17 @@ void convertGraphToString(int *graph, int graphSize, char *graphString)
   int i;
   for (i = 0; i < graphSize*graphSize; i++)
     {
-      char graphEdge[2];
       if (graph[i] == 0)
 	{
-	  char color = '0';
-	  graphEdge[0] = color;
+	  graphString[i] = '0';
 	}
       else if (graph[i] == 1)
 	{
-	  char color = '1';
-	  graphEdge[0] = color;
+	  graphString[i] = '1';
 	}
-      char terminator = '\0';
-      graphEdge[1] = terminator;
-      strcat(graphString, graphEdge);
     }
+  graphString[graphSize*graphSize] = '\0';
+
 #ifdef DEBUG_2
   fprintf(stdout, "Converted graph to string: %s\n", graphString);
   fflush(stdout);
@@ -406,8 +402,10 @@ int main(int argc,char *argv[])
 	printf("Error: could not open local_best.txt, terminating\n");
       printf("Writing size\n");
       fprintf(ofp, "%d\n", graphSize);
+      fflush(ofp);
       printf("Writing count\n");
       fprintf(ofp, "%d\n", count);
+      fflush(ofp);
       printf("%d\n", graphSize);
       printf("%d\n", count);
       convertGraphToString(g, graphSize, gs);
@@ -416,6 +414,7 @@ int main(int argc,char *argv[])
       printf("%d\n", count);
       //PrintGraph(g,graphSize);
       fprintf(ofp, "%s", gs);
+      fflush(ofp);
       printf("Closing file\n");
       int z = fclose(ofp);
       printf("Close status: %d\n", z);
