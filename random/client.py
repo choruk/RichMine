@@ -47,7 +47,7 @@ while True:
 
     # Wait 30 minutes before checking again
     print "Sleeping for 30 minutes..."
-    time.sleep(60*30)
+    time.sleep(60*5)
 
     # Open local file and send to master
     f = open('local_best.txt', 'r')

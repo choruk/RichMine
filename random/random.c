@@ -229,6 +229,28 @@ int main(int argc,char *argv[])
   if(tabooList == NULL) {
     exit(1);
   }
+
+  void convertGraphToString(int *graph, int graphSize, char *graphString)
+  {
+    int i;
+    for (i = 0; i < graphSize*graphSize; i++)
+      {
+	char graphEdge[2];
+	if (graph[i] == 0)
+	  {
+	    char color = '0';
+	    graphEdge[0] = color;
+	  }
+	else if (graph[i] == 1)
+	  {
+	    char color = '1';
+	    graphEdge[0] = color;
+	  }
+	char terminator = '\0';
+	graphEdge[1] = terminator;
+	strcat(graphString, graphEdge);
+      }
+  }
 	
   /*
    * while we do not have a publishable result
@@ -383,9 +405,14 @@ int main(int argc,char *argv[])
 
       // Write current solution to file
       ofp = fopen("local_best.txt", "w");
-      fwrite((void*)&graphSize, sizeof(int), 1, ofp);
-      fwrite((void*)&count, sizeof(int), 1, ofp);
-      fwrite(g, sizeof(int), graphSize*graphSize, ofp);
+      //fwrite((void*)&graphSize, sizeof(int), 1, ofp);
+      fprintf(ofp, "%d", graphSize);
+      //fwrite((void*)&count, sizeof(int), 1, ofp);
+      fprintf(ofp, "%d", count);
+      //fwrite(g, sizeof(int), graphSize*graphSize, ofp);
+      char gs[graphSize*graphSize];
+      convertGraphToString(g, graphSize, gs);
+      fprintf(ofp, "%s", gs);
       fclose(ofp);
 
       // Calculate timing
