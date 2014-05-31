@@ -407,12 +407,15 @@ int main(int argc,char *argv[])
       printf("Begin File IO\n");
       ofp = fopen("local_best.txt", "w");
       //fwrite((void*)&graphSize, sizeof(int), 1, ofp);
+      printf("Writing size\n");
       fprintf(ofp, "%d\n", graphSize);
       //fwrite((void*)&count, sizeof(int), 1, ofp);
+      printf("Writing count\n");
       fprintf(ofp, "%d\n", count);
       //fwrite(g, sizeof(int), graphSize*graphSize, ofp);
       char gs[graphSize*graphSize+1];
       convertGraphToString(g, graphSize, gs);
+      printf("Writing graph\n");
       fprintf(ofp, "%s", gs);
       fclose(ofp);
       printf("End File IO\n");
