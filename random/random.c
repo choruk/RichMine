@@ -12,7 +12,7 @@
 #define TABOOSIZE (500)
 #define BIGCOUNT (9999999)
 
-#define DEBUG_2
+//#define DEBUG_2
 
 /***
  *** example of very simple search for R(6,6) counter examples
@@ -408,6 +408,8 @@ int main(int argc,char *argv[])
       fprintf(ofp, "%d\n", graphSize);
       printf("Writing count\n");
       fprintf(ofp, "%d\n", count);
+      printf("%d\n", graphSize);
+      printf("%d\n", count);
       convertGraphToString(g, graphSize, gs);
       printf("Writing graph\n");
       printf("%d\n", graphSize);
