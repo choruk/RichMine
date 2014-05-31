@@ -233,7 +233,7 @@ int main(int argc,char *argv[])
   /*
    * while we do not have a publishable result
    */
-  while(true)
+  while(1)
     {
       // Read in system_best.txt file
       ifp = fopen("system_best.txt", "r");
