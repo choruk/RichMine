@@ -408,7 +408,6 @@ int main(int argc,char *argv[])
 
       // Write current solution to file
       printf("Begin File IO\n");
-      remove("local_best.txt");
       ofp = fopen("local_best.txt", "w");
       printf("Writing size\n");
       fprintf(ofp, "%d\n", graphSize);
@@ -416,6 +415,7 @@ int main(int argc,char *argv[])
       fprintf(ofp, "%d\n", count);
       convertGraphToString(g, graphSize, gs);
       printf("Writing graph\n");
+      PrintGraph(g,graphSize);
       fprintf(ofp, "%s", gs);
       printf("Closing file\n");
       fclose(ofp);
