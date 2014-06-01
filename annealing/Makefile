@@ -11,11 +11,12 @@ BOBJ=$(COMMON)/jval.o $(COMMON)/jrb.o $(COMMON)/dllist.o $(COMMON)/fifo.o
 LIBS= -lm 
 
 PROGRAMS = annealing
+EXECUTABLE = runMiner
 
 all: $(PROGRAMS)
 
 annealing: annealing.c $(INCL) ${BOBJ}
-	$(COMPILE) ${INCLUDES} -o runMiner annealing.c $(BOBJ) $(LIBS)
+	$(COMPILE) ${INCLUDES} -o $(EXECUTABLE) annealing.c $(BOBJ) $(LIBS)
 
 fifo.o: fifo.c fifo.h jrb.h jval.h dllist.h
 	$(COMPILE) ${INCLUDES} -c fifo.c
@@ -31,3 +32,5 @@ dllist.o: dllist.c dllist.h jval.h
 
 clean:
 	rm -f *.o core ${PROGRAMS}
+	rm -rf *.dSYM
+	rm -f $(EXECUTABLE)
