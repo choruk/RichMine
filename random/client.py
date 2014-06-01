@@ -1,3 +1,4 @@
+import sys
 import time
 import json
 import urllib
@@ -40,6 +41,7 @@ f.close()
 
 # Start c code
 print "Starting mining client..."
+sys.stdout.flush()
 Popen(["./runMiner"])
 
 # Main loop
@@ -47,7 +49,8 @@ while True:
 
     # Wait 30 minutes before checking again
     print "Sleeping for 30 minutes..."
-    time.sleep(60*5)
+    sys.stdout.flush()
+    time.sleep(60*30)
 
     # Open local file and send to master
     f = open('local_best.txt', 'r')
@@ -80,11 +83,13 @@ while True:
     # If master graph is better than local, write that to file
     if system_size != -1 and system_success :
         print "Loading better solution from master..."
+        sys.stdout.flush()
         system_count = current_best_info['count']
         system_graph = current_best_info['graph']
         f = open('system_best.txt', 'w')
-        file_content = system_size + '\n' + system_count + '\n' + system_graph
+        file_content = str(system_size) + '\n' + system_count + '\n' + system_graph
         f.write(file_content)
         f.close()
     else :
         print "Local solution is better than master..."
+        sys.stdout.flush()
