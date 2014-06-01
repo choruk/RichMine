@@ -257,7 +257,7 @@ int main(int argc,char *argv[])
 		fflush(stdout);
 
 		// Perform greedy search until progress slows
-		last_count = 9999;
+		last_count = 999999;
 		while((last_count - count) > 10)
 		  {
 		    last_count = count;
