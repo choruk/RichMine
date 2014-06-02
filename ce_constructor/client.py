@@ -74,8 +74,8 @@ while True:
     # If we aren't, then waiting 30 minutes should still give us enough
     # time to catch it on the next loop iteration. (because total_seconds +
     # 30 minutes should still be less than 15.5 hours)
-    # if not new_batch_job_request_sent and total_seconds in range(fifteen_hours, sixteen_hours):
-    if not new_batch_job_request_sent and total_seconds in range(debug_start_range, debug_end_range):
+    if not new_batch_job_request_sent and total_seconds in range(fifteen_hours, sixteen_hours):
+    # if not new_batch_job_request_sent and total_seconds in range(debug_start_range, debug_end_range):
         # Tell the server we are close to done so it can submit a new
         # batch job.
         data = urllib.urlencode({"meaningless": -1})
@@ -96,8 +96,8 @@ while True:
         if response_dict["success"]:
             new_batch_job_request_sent = True
     # Wait 30 minutes before checking again
-    # time.sleep(sleep_time)
-    time.sleep(debug_sleep_time)
+    time.sleep(sleep_time)
+    # time.sleep(debug_sleep_time)
     # Open local file and send to master
     f = open('local_best.txt', 'r')
     local_size = f.readline().strip()
