@@ -7,6 +7,7 @@
 #include "ce_constructor.h"
 
 #define DEBUG_2
+// #define DEBUG_3
 
 #define INITIAL_GRAPH_SIZE 99
 #define SYMMETRIC_RAMSEY_NUMBER 6
@@ -22,7 +23,7 @@ double getSeconds() {
 void printUsageAndExit()
 {
   fprintf(stderr, "Unexpected usage!\n");
-  fprintf(stderr, "usage: ./ce_constructor [number of proccesors] [initial graph size]");
+  fprintf(stderr, "usage: ./ce_constructor [number of proccesors] [initial graph size]\n");
   exit(-1);
 }
 
@@ -227,6 +228,10 @@ void CreateGraph(int *graph, int graphSize)
 */
 void loadGraphFromString(int *graph, int graphSize, char *graphString)
 {
+#ifdef DEBUG_3
+  fprintf(stdout, "Attempting to load graph from string: %s\n", graphString);
+  fflush(stdout);
+#endif
   char *i;
   int j = 0;
   for (i=graphString; *i; i++)
@@ -258,22 +263,17 @@ void convertGraphToString(int *graph, int graphSize, char *graphString)
   int i;
   for (i = 0; i < graphSize*graphSize; i++)
   {
-    char graphEdge[2];
     if (graph[i] == 0)
     {
-      char color = '0';
-      graphEdge[0] = color;
+      graphString[i] = '0';
     }
     else if (graph[i] == 1)
     {
-      char color = '1';
-      graphEdge[0] = color;
+      graphString[i] = '1';
     }
-    char terminator = '\0';
-    graphEdge[1] = terminator;
-    strcat(graphString, graphEdge);
   }
-#ifdef DEBUG_2
+  graphString[graphSize*graphSize] = '\0';
+#ifdef DEBUG_3
   fprintf(stdout, "Converted graph to string: %s\n", graphString);
   fflush(stdout);
 #endif
@@ -281,6 +281,10 @@ void convertGraphToString(int *graph, int graphSize, char *graphString)
 
 void writeGraphToFile(int *graph, int graphSize, int cliqueCount, char *filename)
 {
+#ifdef DEBUG_2
+  fprintf(stdout, "Writing graph to file with size: %d count: %d filename: %s\n", graphSize, cliqueCount, filename);
+  fflush(stdout);
+#endif
   FILE *graphFile = fopen(filename, "w");
 	if (graphFile == NULL)
   {
@@ -291,8 +295,9 @@ void writeGraphToFile(int *graph, int graphSize, int cliqueCount, char *filename
   convertGraphToString(graph, graphSize, graphString);
   fprintf(graphFile, "%d\n%d\n%s", graphSize, cliqueCount, graphString);
   fclose(graphFile);
-#ifdef DEBUG_1
-  printf("Wrote graph to %s", filename);
+#ifdef DEBUG_2
+  fprintf(stdout, "Wrote graph to %s\n", filename);
+  fflush(stdout);
 #endif
 }
 
@@ -324,6 +329,10 @@ int loadGraphFromFile(int *graph, int allocatedGraphSize, int *cliqueCount, char
     {
       // size
       graphSize = atoi(line);
+#ifdef DEBUG_2
+      fprintf(stdout, "Parsed graphSize as %d\n", graphSize);
+      fflush(stdout);
+#endif
       if (allocatedGraphSize != graphSize)
       {
         // Need to reallocate
@@ -335,11 +344,19 @@ int loadGraphFromFile(int *graph, int allocatedGraphSize, int *cliqueCount, char
     {
       // count
       *cliqueCount = atoi(line);
+#ifdef DEBUG_2
+      fprintf(stdout, "Parsed cliqueCount as %d\n", *cliqueCount);
+      fflush(stdout);
+#endif
     }
     else if (i == 2)
     {
       // graph string
       graphString = line;
+#ifdef DEBUG_3
+      fprintf(stdout, "Parsed graphString as %s\n", graphString);
+      fflush(stdout);
+#endif
       loadGraphFromString(graph, graphSize, graphString);
     }
     else
@@ -667,7 +684,8 @@ int main(int argc, char *argv[])
     writeGraphToFile(graph, graphSize, count, localGraphFile);
     if (fileExists(graphFileFromServer))
     {
-      graphSize = loadGraphFromFile(graph, graphSize, &count, graphFileFromServer);
+      int oldGraphSize = graphSize;
+      graphSize = loadGraphFromFile(graph, oldGraphSize, &count, graphFileFromServer);
       fprintf(
         stdout,
         "Found new system best data with size: %d and clique count: %d\n",
@@ -675,7 +693,14 @@ int main(int argc, char *argv[])
         count
       );
       fflush(stdout);
+      // Remove the server file after consuming it
       remove(graphFileFromServer);
+      // Update the other graphs as well
+      cilk_for (i = 0; i < p; i++)
+      {
+        graphs[i] = (int *)malloc(graphSize*graphSize*sizeof(int));
+        CopyGraph(graph, graphSize, graphs[i], graphSize);
+      }
     }
   }
   // Clean up

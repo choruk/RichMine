@@ -1,0 +1,11 @@
+Executable              = client.py
+Universe                = vanilla
+when_to_transfer_output = ON_EXIT_OR_EVICT
+transfer_input_files    = runMiner
+transfer_output_files   = local_best.txt
+
+error   = stderr.$(Process)
+output  = stdout.$(Process)
+log     = runMiner.log
+
+queue 1
